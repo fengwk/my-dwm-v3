@@ -45,10 +45,12 @@ install: all
 	sed "s/VERSION/${VERSION}/g" < dwm.1 > ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	ln -fs $(CURDIR)/scripts/dwmc $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-termcmd $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwmc
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-termcmd
 
 .PHONY: all options clean dist install uninstall
