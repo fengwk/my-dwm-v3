@@ -195,7 +195,7 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
 static void run(void);
-static void runautostart(void);
+static void runautosh(const char autoblocksh[], const char autosh[]);
 static void scan(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
@@ -237,8 +237,10 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 
 /* variables */
-static const char autostartblocksh[] = "autostart_blocking.sh";
-static const char autostartsh[] = "autostart.sh";
+static const char autostartblocksh[] = "autostart_blocking.sh"; // 启动dwm时以阻塞方式执行
+static const char autostartsh[] = "autostart.sh"; // 启动dwm时以非阻塞方式执行
+static const char autostopblocksh[] = "autostop_blocking.sh"; // 退出dwm时以阻塞方式执行
+static const char autostopsh[] = "autostop.sh"; // 退出dwm时以非阻塞方式执行
 static const char broken[] = "broken";
 static const char dwmdir[] = "dwm";
 static const char localshare[] = ".local/share";
@@ -1397,7 +1399,7 @@ run(void)
 }
 
 void
-runautostart(void)
+runautosh(const char autoblocksh[], const char autosh[])
 {
 	char *pathpfx;
 	char *path;
@@ -1451,8 +1453,8 @@ runautostart(void)
 	}
 
 	/* try the blocking script first */
-	path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
-	if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
+	path = ecalloc(1, strlen(pathpfx) + strlen(autoblocksh) + 2);
+	if (sprintf(path, "%s/%s", pathpfx, autoblocksh) <= 0) {
 		free(path);
 		free(pathpfx);
 	}
@@ -1461,7 +1463,7 @@ runautostart(void)
 		system(path);
 
 	/* now the non-blocking script */
-	if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0) {
+	if (sprintf(path, "%s/%s", pathpfx, autosh) <= 0) {
 		free(path);
 		free(pathpfx);
 	}
@@ -2241,9 +2243,10 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
-	runautostart();
+  runautosh(autostartblocksh, autostartsh);
 	run();
 	cleanup();
 	XCloseDisplay(dpy);
+  runautosh(autostopblocksh, autostopsh);
 	return EXIT_SUCCESS;
 }
