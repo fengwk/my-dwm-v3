@@ -2,6 +2,7 @@
 
 /* appearance */
 static const unsigned int borderpx  = 5;        /* border pixel of windows */
+static unsigned int gappx     = 10;             /* gap pixel between windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
@@ -213,4 +214,5 @@ static Signal signals[] = {
 	{ "setlayout",         setlayout },
 	{ "setlayoutex",       setlayoutex },
 	{ "switchenternotify", switchenternotify },
+	{ "setgappx",          setgappx },
 };

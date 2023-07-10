@@ -197,6 +197,7 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
+static void setgappx(const Arg *arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
@@ -978,6 +979,15 @@ focusstack(const Arg *arg)
 	if (c) {
 		focus(c);
 		restack(selmon);
+	}
+}
+
+void
+setgappx(const Arg *arg) {
+	if (arg) {
+		gappx = arg->ui;
+		for (Monitor *m = mons; m; m = m->next)
+			arrange(m);
 	}
 }
 
@@ -2022,27 +2032,31 @@ void
 tile(Monitor *m)
 {
 	unsigned int i, n, h, mw, my, ty;
+	unsigned int r, g = gappx; // define by dwm-gaps
 	Client *c;
 
+	// 查找当前可见的窗口数量n
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
 
-	if (n > m->nmaster)
-		mw = m->nmaster ? m->ww * m->mfact : 0;
-	else
-		mw = m->ww;
-	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
-		if (i < m->nmaster) {
-			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
-			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
-			if (my + HEIGHT(c) < m->wh)
-				my += HEIGHT(c);
-		} else {
-			h = (m->wh - ty) / (n - i);
-			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), 0);
-			if (ty + HEIGHT(c) < m->wh)
-				ty += HEIGHT(c);
+	if (n > m->nmaster) // 这种情况下会有两列
+		mw = m->nmaster ? (m->ww - g * 3) * m->mfact : 0; // 计算两列时候master的宽度
+	else // 否则只有一列
+		mw = m->ww - g * 2; // 计算单列时候master的宽度
+	for (i = 0, my = ty = g, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
+		if (i < m->nmaster) { // master
+			r = MIN(n, m->nmaster) - i;
+			h = (m->wh - my - g * r) / r;
+			resize(c, m->wx + g, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
+			if (my + HEIGHT(c) + g < m->wh)
+				my += HEIGHT(c) + g;
+		} else { // 非master
+			r = n - i;
+			h = (m->wh - ty - g * r) / r;
+			resize(c, m->wx + mw + g * 2, m->wy + ty, m->ww - mw - g * 3 - (2*c->bw), h - (2*c->bw), False);
+			if (ty + HEIGHT(c) + g < m->wh)
+				ty += HEIGHT(c) + g;
 		}
 }
 
