@@ -2050,16 +2050,15 @@ void
 togglebar(const Arg *arg)
 {
 	selmon->showbar = !selmon->showbar;
-	updatebarpos(selmon);
+	updatebarpos(selmon); // 更新bar位置
 	resizebarwin(selmon);
 	if (showsystray) {
+		// 更新systray位置
 		XWindowChanges wc;
-		if (!selmon->showbar)
-			wc.y = -bh;
-		else if (selmon->showbar) {
-			wc.y = 0;
-			if (!selmon->topbar)
-				wc.y = selmon->mh - bh;
+		if (!selmon->showbar) {
+			wc.y = selmon->topbar ? -bh : selmon->mh;
+		} else if (selmon->showbar) {
+			wc.y = selmon->topbar ? 0 : selmon->mh - bh;
 		}
 		XConfigureWindow(dpy, systray->win, CWY, &wc);
 	}
@@ -2204,7 +2203,7 @@ updatebarpos(Monitor *m)
 		m->by = m->topbar ? m->wy : m->wy + m->wh;
 		m->wy = m->topbar ? m->wy + bh : m->wy;
 	} else
-		m->by = -bh;
+		m->by = m->topbar ? -bh : m->mh;
 }
 
 void
