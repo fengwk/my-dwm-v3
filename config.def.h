@@ -2,8 +2,9 @@
 
 /* appearance */
 static const unsigned int borderpx  = 5;        /* border pixel of windows */
-static unsigned int gappx     = 10;             /* gap pixel between windows */
-static const unsigned int snap      = 32;       /* snap pixel */
+static unsigned int gappx = 10;                 /* gap pixel between windows */
+static unsigned int smartgap = 1;               /* 允许在单个客户端的平铺布局中移除gap */
+static const unsigned int snap = 32;            /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
 static const unsigned int systrayspacing = 2;   /* systray spacing */
@@ -45,9 +46,19 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	/* class                 instance    title         tags mask    isfloating     monitor */
+ 	{ "Peek",                NULL,       NULL,         0,           1,             -1 },
+ 	{ "popo",                NULL,       NULL,         0,           1,             -1 },
+ 	{ "wechat.exe",          NULL,       NULL,         0,           1,             -1 },
+ 	{ "QQ",                  NULL,       NULL,         0,           1,             -1 },
+ 	{ "feh",                 NULL,       NULL,         0,           1,             -1 },
+ 	{ "XMind",               NULL,       NULL,         0,           0,             -1 },
+ 	{ "xiaoyi_assistant",    NULL,       NULL,         1<<8,        0,             -1 },
+ 	{ "jetbrains-idea",      NULL,       NULL,         0,           0,             -1 },
+ 	{ "jetbrains-idea-ce",   NULL,       NULL,         0,           0,             -1 },
+ 	{ "netease-cloud-music", NULL,       NULL,         0,           1,             -1 },
+ 	{ "Alacritty",           NULL,       "#todolist",  0,           1,             -1 },
+ 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1, -1 },
 };
 
 /* layout(s) */
@@ -152,75 +163,15 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
 
-void
-setlayoutex(const Arg *arg)
-{
-	setlayout(&((Arg) { .v = &layouts[arg->i] }));
-}
-
-void
-viewex(const Arg *arg)
-{
-	view(&((Arg) { .ui = 1 << arg->ui }));
-}
-
-void
-viewall(const Arg *arg)
-{
-	view(&((Arg){.ui = ~0}));
-}
-
-void
-toggleviewex(const Arg *arg)
-{
-	toggleview(&((Arg) { .ui = 1 << arg->ui }));
-}
-
-void
-tagex(const Arg *arg)
-{
-	tag(&((Arg) { .ui = 1 << arg->ui }));
-}
-
-void
-toggletagex(const Arg *arg)
-{
-	toggletag(&((Arg) { .ui = 1 << arg->ui }));
-}
-
-void
-tagall(const Arg *arg)
-{
-	tag(&((Arg){.ui = ~0}));
-}
-
 /* signal definitions */
 /* signum must be greater than 0 */
 /* trigger signals using `xsetroot -name "fsignal:<signame> [<type> <value>]"` */
 static Signal signals[] = {
 	/* signum              function */
-	{ "focusstack",        focusstack },
 	{ "setmfact",          setmfact },
-	{ "togglebar",         togglebar },
 	{ "incnmaster",        incnmaster },
-	{ "togglefloating",    togglefloating },
-	{ "focusmon",          focusmon },
-	{ "tagmon",            tagmon },
-	{ "zoom",              zoom },
-	{ "view",              view },
-	{ "viewall",           viewall },
-	{ "viewex",            viewex },
-	{ "toggleview",        view },
-	{ "toggleviewex",      toggleviewex },
-	{ "tag",               tag },
-	{ "tagall",            tagall },
-	{ "tagex",             tagex },
-	{ "toggletag",         tag },
-	{ "toggletagex",       toggletagex },
-	{ "killclient",        killclient },
 	{ "quit",              quit },
-	{ "setlayout",         setlayout },
-	{ "setlayoutex",       setlayoutex },
 	{ "switchenternotify", switchenternotify },
 	{ "setgappx",          setgappx },
+	{ "togglesmartgap",    togglesmartgap },
 };

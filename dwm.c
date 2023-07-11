@@ -197,8 +197,8 @@ static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstack(const Arg *arg);
-static void setgappx(const Arg *arg);
 static Atom getatomprop(Client *c, Atom prop);
+static void setgappx(const Arg *arg);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
 static unsigned int getsystraywidth();
@@ -249,6 +249,7 @@ static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
+static void togglesmartgap(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
@@ -987,15 +988,6 @@ focusstack(const Arg *arg)
 	}
 }
 
-void
-setgappx(const Arg *arg) {
-	if (arg) {
-		gappx = arg->ui;
-		for (Monitor *m = mons; m; m = m->next)
-			arrange(m);
-	}
-}
-
 Atom
 getatomprop(Client *c, Atom prop)
 {
@@ -1018,6 +1010,15 @@ getatomprop(Client *c, Atom prop)
 		XFree(p);
 	}
 	return atom;
+}
+
+void
+setgappx(const Arg *arg) {
+	if (arg) {
+		gappx = arg->ui;
+		for (Monitor *m = mons; m; m = m->next)
+			arrange(m);
+	}
 }
 
 unsigned int
@@ -2059,6 +2060,9 @@ tile(Monitor *m)
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
+	// smart gap
+	if (n == 1 && smartgap)
+		g = 0;
 
 	if (n > m->nmaster) // 这种情况下会有两列
 		mw = m->nmaster ? (m->ww - g * 3) * m->mfact : 0; // 计算两列时候master的宽度
@@ -2138,6 +2142,13 @@ toggleview(const Arg *arg)
 		focus(NULL);
 		arrange(selmon);
 	}
+}
+
+void
+togglesmartgap(const Arg *arg) {
+	smartgap = smartgap ^ 1;
+	for (Monitor *m = mons; m; m = m->next)
+		arrange(m);
 }
 
 void
