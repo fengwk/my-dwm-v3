@@ -4,5 +4,5 @@
 
 # 使用新的方式随即选取图片可以使得多个显示器上显示相同的背景图
 picdir='/home/fengwk/Pictures/wallpapers/'
-pic=$(ls "/home/fengwk/Pictures/wallpapers/" | tr ' ' '\n' | shuf | head -1)
+pic=$(ls $picdir | tr ' ' '\n' | shuf | head -1)
 feh --bg-fill --no-fehbg $picdir$pic
