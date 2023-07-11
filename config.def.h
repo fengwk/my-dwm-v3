@@ -171,6 +171,11 @@ static const char *switchmonitor2[] = { "dwm-switchmonitor", "2", NULL };
 static const char *flameshotcmd[] = { "dwm-flameshot", "gui", NULL };
 static const char *flameshotocrcmd[] = { "dwm-flameshotocr", NULL };
 
+/* 鼠标控制 */
+static const char *mouseclick1[] = { "xdotool", "click", "1", NULL }; // 鼠标左键点击
+static const char *mouseclick2[] = { "xdotool", "click", "2", NULL }; // 鼠标中键点击
+static const char *mouseclick3[] = { "xdotool", "click", "3", NULL }; // 鼠标右键点击
+
 /*
  * xev命令可以获取keycode
  * xmodmap命令可以查看所有modkey
@@ -235,6 +240,16 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 0 } },
 	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 1 } },
 	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 2 } },
+
+	/* 鼠标控制 */
+	{ MODKEY|ControlMask,              XK_z,         spawn,           {.v = mouseclick1} },  // 鼠标左键点击
+	{ MODKEY|ControlMask,              XK_x,         spawn,           {.v = mouseclick2} },  // 鼠标中键点击
+	{ MODKEY|ControlMask,              XK_c,         spawn,           {.v = mouseclick3} },  // 鼠标右键点击
+	{ MODKEY|ControlMask,              XK_f,         mousefocus,      {0} },                 // 鼠标聚焦到当前选中窗口
+	{ MODKEY|ControlMask,              XK_k,         mousemove,       {.ui = MOUSE_UP} },    // 向上移动鼠标光标
+	{ MODKEY|ControlMask,              XK_l,         mousemove,       {.ui = MOUSE_RIGHT} }, // 向右移动鼠标光标
+	{ MODKEY|ControlMask,              XK_j,         mousemove,       {.ui = MOUSE_DOWM} },  // 向下移动鼠标光标
+	{ MODKEY|ControlMask,              XK_h,         mousemove,       {.ui = MOUSE_LEFT} },  // 向左移动鼠标光标
 };
 
 /* button definitions */

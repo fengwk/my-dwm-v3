@@ -42,6 +42,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 #include <X11/Xft/Xft.h>
+#include <sys/time.h>
+#include <math.h>
 
 #include "drw.h"
 #include "util.h"
@@ -86,6 +88,7 @@ enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
+enum { MOUSE_UP, MOUSE_RIGHT, MOUSE_DOWM, MOUSE_LEFT }; /* movemouse */
 
 typedef union {
 	int i;
@@ -236,6 +239,8 @@ static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void motionnotify(XEvent *e);
+static void mousefocus(const Arg *arg);
+static void mousemove(const Arg *arg);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
 static void pop(Client *c);
@@ -352,6 +357,9 @@ static Display *dpy;
 static Drw *drw;
 static Monitor *mons, *selmon;
 static Window root, wmcheckwin;
+
+static long long beginmousemove = 0; // 开始movemouse的时间戳
+static long long prevmousemove = 0; // 前一次movemouse的时间戳
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -1635,6 +1643,56 @@ motionnotify(XEvent *e)
 		focus(NULL);
 	}
 	mon = m;
+}
+
+void
+mousefocus(const Arg *arg) {
+  if (selmon && selmon->sel) {
+    Client *c = selmon->sel;
+    XWarpPointer(dpy, None, root, 0, 0, 0, 0, c->x + c->w / 2, c->y + c->h / 2);
+  }
+}
+
+void
+mousemove(const Arg *arg) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  long long curms = (long long) tv.tv_sec * 1000 + tv.tv_usec/ 1000;
+  if (curms - prevmousemove < 100) {
+    if (beginmousemove == 0) {
+      beginmousemove = curms;
+    }
+  } else {
+    beginmousemove = 0;
+  }
+  prevmousemove = curms;
+
+  if (arg) {
+    // v是鼠标移动的速度
+    // k是基础速度
+    // t是按压时间
+    // e是自然对数的底数，约等于2.71828
+    double base = 15;
+    double t = beginmousemove == 0 ? 0 : (curms - beginmousemove);
+    double delta = 400;
+    double deltams = 1000 * 2;
+    double v = base + delta * tanh(t / deltams);
+    int step = ceil(v);
+
+    int x, y;
+    getrootptr(&x, &y);
+    int dir = arg->ui % 4;
+    if (dir == MOUSE_UP) {
+      y -= step;
+    } else if (dir == MOUSE_RIGHT) {
+      x += step;
+    } else if (dir == MOUSE_DOWM) {
+      y += step;
+    } else {
+      x -= step;
+    }
+    XWarpPointer(dpy, None, root, 0, 0, 0, 0, x, y);
+  }
 }
 
 void
