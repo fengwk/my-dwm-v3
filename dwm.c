@@ -160,6 +160,7 @@ typedef struct {
 	unsigned int tags;
 	int isfloating;
 	int monitor;
+	int hideborder;
 } Rule;
 
 typedef struct Systray   Systray;
@@ -349,6 +350,7 @@ applyrules(Client *c)
 		&& (!r->instance || strstr(instance, r->instance)))
 		{
 			c->isfloating = r->isfloating;
+			c->bw = r->hideborder ? 0 : c->bw;
 			c->tags |= r->tags;
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
@@ -1241,6 +1243,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->w = c->oldw = wa->width;
 	c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
+	c->bw = borderpx;
 
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -1257,7 +1260,6 @@ manage(Window w, XWindowAttributes *wa)
 		c->y = c->mon->wy + c->mon->wh - HEIGHT(c);
 	c->x = MAX(c->x, c->mon->wx);
 	c->y = MAX(c->y, c->mon->wy);
-	c->bw = borderpx;
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
@@ -1855,14 +1857,19 @@ setfullscreen(Client *c, int fullscreen)
 void
 setlayout(const Arg *arg)
 {
+
+	int presolitary = selmon->sel ? solitary(selmon->sel) : -1; // 记录之前状态是否为solitary
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
 		selmon->sellt ^= 1;
 	if (arg && arg->v)
 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
-	if (selmon->sel)
+	if (selmon->sel) {
 		arrange(selmon);
-	else
+		if (presolitary >= 0 && presolitary && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
+			XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
+
+	} else
 		drawbar(selmon);
 }
 

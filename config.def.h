@@ -46,19 +46,19 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class                 instance    title         tags mask    isfloating     monitor */
- 	{ "Peek",                NULL,       NULL,         0,           1,             -1 },
- 	{ "popo",                NULL,       NULL,         0,           1,             -1 },
- 	{ "wechat.exe",          NULL,       NULL,         0,           1,             -1 },
- 	{ "QQ",                  NULL,       NULL,         0,           1,             -1 },
- 	{ "feh",                 NULL,       NULL,         0,           1,             -1 },
- 	{ "XMind",               NULL,       NULL,         0,           0,             -1 },
- 	{ "xiaoyi_assistant",    NULL,       NULL,         1<<8,        0,             -1 },
- 	{ "jetbrains-idea",      NULL,       NULL,         0,           0,             -1 },
- 	{ "jetbrains-idea-ce",   NULL,       NULL,         0,           0,             -1 },
- 	{ "netease-cloud-music", NULL,       NULL,         0,           1,             -1 },
- 	{ "Alacritty",           NULL,       "#todolist",  0,           1,             -1 },
- 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1, -1 },
+	/* class                 instance    title         tags mask    isfloating     monitor    hideborder */
+ 	{ "Peek",                NULL,       NULL,         0,           1,             -1,        0},
+ 	{ "popo",                NULL,       NULL,         0,           1,             -1,        1},
+ 	{ "wechat.exe",          NULL,       NULL,         0,           1,             -1,        0},
+ 	{ "QQ",                  NULL,       NULL,         0,           1,             -1,        0},
+ 	{ "feh",                 NULL,       NULL,         0,           1,             -1,        0},
+ 	{ "XMind",               NULL,       NULL,         0,           0,             -1,        0},
+ 	{ "xiaoyi_assistant",    NULL,       NULL,         1<<8,        0,             -1,        0},
+ 	{ "jetbrains-idea",      NULL,       NULL,         0,           0,             -1,        0},
+ 	{ "jetbrains-idea-ce",   NULL,       NULL,         0,           0,             -1,        0},
+ 	{ "netease-cloud-music", NULL,       NULL,         0,           1,             -1,        0},
+ 	{ "Alacritty",           NULL,       "#todolist",  0,           1,             -1,        0},
+ 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1, -1,        0},
 };
 
 /* layout(s) */
