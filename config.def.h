@@ -14,17 +14,6 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */
 static const char *fonts[]          = { "SauceCodePro Nerd Font:pixelsize=32" };
 static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=32";
-// 默认配色
-// static const char col_gray1[]       = "#222222";
-// static const char col_gray2[]       = "#444444";
-// static const char col_gray3[]       = "#bbbbbb";
-// static const char col_gray4[]       = "#eeeeee";
-// static const char col_cyan[]        = "#005577";
-// static const char *colors[][3]      = {
-// 	/*               fg         bg         border   */
-// 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-// 	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
-// };
 // 淡灰配色
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
@@ -33,13 +22,72 @@ static const char col_gray4[]       = "#eeeeee";
 static const char col_cyan[]        = "#444444";
 static const char col_sboard[]      = "#bbbbbb";
 static const char *colors[][3]      = {
-  /*               fg         bg         border   */
-  [SchemeNorm]    = { col_gray3, col_gray1, col_gray2 },
-  [SchemeSel]     = { col_gray4, col_cyan,  col_sboard },
+  /*                 fg         bg         border   */
+	[SchemeNorm] = { col_gray3, col_gray1, col_gray2  },
+	[SchemeSel]  = { col_gray4, col_cyan,  col_sboard },
+	[SchemeHid]  = { col_cyan,  col_gray1, col_cyan   },
 };
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+static const char ptagf[] = "%s %s"; /* format of a tag label */
+static const char etagf[] = "%s"; /* format of an empty tag */
+static const char *taglabels[][2] = {
+  { "st-256color", "" },
+  { "Alacritty", "" },
+  { "Google-chrome", "󰊯" },
+  { "Google-chrome-unstable", "󰊯" },
+  { "Microsoft-edge-dev", "󰇩" },
+  { "Microsoft-edge", "󰇩" },
+  { "jetbrains-idea", "" },
+  { "jetbrains-idea-ce", "" },
+  { "code-oss", "" },
+  { "com-xk72-charles-gui-MainWithClassLoader", "" },
+  { "popo", "﫢" },
+  { "wechat.exe", "" },
+  { "Postman", "" },
+  { "XMind", "" },
+  { "Xmind", "" },
+  { "Java", "" },
+  { "Eclipse", "" },
+  { "xiaoyi_assistant", "嬨" },
+  { "vlc", "嗢" },
+  { "baidunetdisk", "" },
+  { "Baidunetdisk", "" },
+  { "Dragon-drop", "" },
+  { "et", "" },
+  { "wps", "" },
+  { "wpp", "" },
+  { "obs", "辶" },
+  { "Shotcut", "難" },
+  { "Optimus Manager Qt", "" },
+  { "Nm-connection-editor", "" },
+  { "Xfce4-power-manager-settings", "" },
+  { "freedesktop", "" },
+  { "Lxappearance", "" },
+  { "qt5ct", "" },
+  { "fcitx5-config-qt", "" },
+  { "pavucontrol-qt", "" },
+  { "Pavucontrol", "" },
+  { "Tlp-UI", "" },
+  { "flameshot", "" },
+  { "Peek", "" },
+  { "Parcellite", "" },
+  { "thunderbird", "" },
+  { "Typora", "" },
+  { "Timeshift-gtk", "" },
+  { "pdf", "" },
+  { "netease-cloud-music", "" },
+  { "QQ", "" },
+  { "VirtualBox Manager", "練" },
+  { "VirtualBox Machine", "練" },
+  { "VirtualBox", "練" },
+  { "Tor Browser", "" },
+  { "Clash for Windows", "" },
+  { "draw.io", "" },
+  { "feh", "" },
+};
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -117,8 +165,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_v,      spawn,          {.v = rofi_clipster } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_j,      focusstackvis,  {.i = +1 } },
+	{ MODKEY,                       XK_k,      focusstackvis,  {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
@@ -138,6 +188,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
+	{ Mod4Mask,                     XK_h,      togglehide,     {0} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -161,15 +212,17 @@ static const Key keys[] = {
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
+	{ ClkTagBar,            0,              Button1,        view,           {0} },
+	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
+	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
+	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
+	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
-	{ ClkTagBar,            0,              Button1,        view,           {0} },
-	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
 
 /* signal definitions */
@@ -183,4 +236,5 @@ static Signal signals[] = {
 	{ "switchenternotify", switchenternotify },
 	{ "setgappx",          setgappx },
 	{ "togglesmartgap",    togglesmartgap },
+	{ "showall",           showall },
 };

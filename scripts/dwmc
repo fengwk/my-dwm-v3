@@ -7,7 +7,7 @@ signal() {
 case $# in
 1)
 	case $1 in
-	quit | togglesmartgap)
+	quit | togglesmartgap | showall)
 		signal $1
 		;;
 	*)
