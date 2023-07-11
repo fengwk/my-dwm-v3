@@ -3,7 +3,7 @@
 /* appearance */
 static const unsigned int borderpx  = 5;        /* border pixel of windows */
 static unsigned int gappx = 10;                 /* gap pixel between windows */
-static unsigned int smartgap = 1;               /* 允许在单个客户端的平铺布局中移除gap */
+static unsigned int smartgap = 1;               /* 是否在单个客户端的平铺布局时移除gap */
 static const unsigned int snap = 32;            /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
@@ -12,6 +12,7 @@ static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display 
 static const int showsystray        = 1;        /* 0 means no systray */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */
+static const int windowfollow       = 1;        /* 是否使窗口跟随client移动 */
 static const char *fonts[]          = { "SauceCodePro Nerd Font:pixelsize=32" };
 static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=32";
 // 淡灰配色

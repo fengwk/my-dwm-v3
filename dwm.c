@@ -2308,6 +2308,8 @@ tag(const Arg *arg)
 {
 	if (selmon->sel && arg->ui & TAGMASK) {
 		selmon->sel->tags = arg->ui & TAGMASK;
+		if (windowfollow)
+			view(arg);
 		focus(NULL);
 		arrange(selmon);
 	}
@@ -2318,7 +2320,10 @@ tagmon(const Arg *arg)
 {
 	if (!selmon->sel || !mons->next)
 		return;
-	sendmon(selmon->sel, dirtomon(arg->i));
+	Monitor *m = dirtomon(arg->i);
+	sendmon(selmon->sel, m);
+	if (windowfollow)
+		switchtomon(m);
 }
 
 void
