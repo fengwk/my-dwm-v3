@@ -1,0 +1,3 @@
+#!/bin/bash
+
+dwm-flameshot gui --raw | tesseract -l eng+chi_sim stdin stdout | xclip -selection clipboard

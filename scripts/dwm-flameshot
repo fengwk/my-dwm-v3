@@ -1,0 +1,10 @@
+#/bin/bash
+# 这个flameshot包装脚本解决了两个问题
+# 1、处理了hdpi导致的截图形变
+# 2、处理了截图后终端失去游标焦点
+focusedwindow=$(xdotool getactivewindow)
+env QT_AUTO_SCREEN_SCALE_FACTOR=0 QT_SCREEN_SCALE_FACTORS='' flameshot $@
+if [ "$focusedwindow" == "$(xdotool getactivewindow)" ]
+then
+	xdotool windowfocus $focusedwindow
+fi

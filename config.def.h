@@ -99,6 +99,10 @@ static const char *rofi_clipster[] = { "rofi-clipster", NULL };
 static const char *switchmonitor1[] = { "dwm-switchmonitor", "1", NULL };
 static const char *switchmonitor2[] = { "dwm-switchmonitor", "2", NULL };
 
+/* flameshot */
+static const char *flameshotcmd[] = { "dwm-flameshot", "gui", NULL };
+static const char *flameshotocrcmd[] = { "dwm-flameshotocr", NULL };
+
 /*
  * xev命令可以获取keycode
  * xmodmap命令可以查看所有modkey
@@ -146,6 +150,10 @@ static const Key keys[] = {
     /* monitor */
     { Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
     { Mod4Mask,                     XK_2,      spawn,          {.v = switchmonitor2 } }, // 屏幕检测，双监视器
+
+	/* flameshot */
+	{ MODKEY|ShiftMask,             XK_a,      spawn,           {.v = flameshotocrcmd } }, // 截图ocr
+	{ MODKEY,                       XK_a,      spawn,           {.v = flameshotcmd } },    // 截图
 };
 
 /* button definitions */
