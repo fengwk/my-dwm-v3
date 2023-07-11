@@ -222,6 +222,7 @@ static unsigned int getsystraywidth();
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
+static void grid(Monitor *m);
 static void hide(const Arg *arg);
 static void hidewin(Client *c);
 static void incnmaster(const Arg *arg);
@@ -1297,6 +1298,62 @@ grabkeys(void)
 							 root, True,
 							 GrabModeAsync, GrabModeAsync);
 		XFree(syms);
+	}
+}
+
+void
+grid(Monitor *m) {
+	unsigned int i, n;
+	unsigned int cx, cy, cw, ch;
+	unsigned int dx;
+	unsigned int cols, rows, overcols;
+	unsigned int g = gappx;
+	Client *c;
+
+	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
+
+	if (n == 0)
+		return;
+	if (n == 1) {
+		c = nexttiled(m->clients);
+		cw = (m->ww - 2 * g) * 0.7;
+		ch = (m->wh - 2 * g) * 0.65;
+		// cw = (m->ww - 2 * ov) * 0.95;
+		// ch = (m->wh - 2 * oh) * 0.95;
+		resize(c, m->mx + (m->mw - cw) / 2 + g,
+				m->my + (m->mh - ch) / 2 + g, cw - 2 * c->bw,
+				ch - 2 * c->bw, 0);
+		return;
+	}
+	if (n == 2) {
+		c = nexttiled(m->clients);
+		cw = (m->ww - 2 * g - g) / 2;
+		ch = (m->wh - 2 * g) * 0.65;
+		resize(c, m->mx + g, m->my + (m->mh - ch) / 2 + g,
+				cw - 2 * c->bw, ch - 2 * c->bw, 0);
+		resize(nexttiled(c->next), m->mx + cw + g + g,
+				m->my + (m->mh - ch) / 2 + g, cw - 2 * c->bw,
+				ch - 2 * c->bw, 0);
+		return;
+	}
+
+	for (cols = 0; cols <= n / 2; cols++)
+		if (cols * cols >= n)
+			break;
+	rows = (cols && (cols - 1) * cols >= n) ? cols - 1 : cols;
+	ch = (m->wh - 2 * g - (rows - 1) * g) / rows;
+	cw = (m->ww - 2 * g - (cols - 1) * g) / cols;
+
+	overcols = n % cols;
+	if (overcols)
+		dx = (m->ww - overcols * cw - (overcols - 1) * g) / 2 - g;
+	for (i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
+		cx = m->wx + (i % cols) * (cw + g);
+		cy = m->wy + (i / cols) * (ch + g);
+		if (overcols && i >= n - overcols) {
+			cx += dx;
+		}
+		resize(c, cx + g, cy + g, cw - 2 * c->bw, ch - 2 * c->bw, 0);
 	}
 }
 
