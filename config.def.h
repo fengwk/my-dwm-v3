@@ -84,6 +84,10 @@ static const char *rofi_run[] = { "rofi-wrapper.sh", "-show", "combi", "-combi-m
 static const char *rofi_browser[] = { "rofi-broswer", NULL };
 static const char *rofi_clipster[] = { "rofi-clipster", NULL };
 
+/* monitor */
+static const char *switchmonitor1[] = { "dwm-switchmonitor", "1", NULL };
+static const char *switchmonitor2[] = { "dwm-switchmonitor", "2", NULL };
+
 /*
  * xev命令可以获取keycode
  * xmodmap命令可以查看所有modkey
@@ -127,6 +131,10 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
+
+    /* monitor */
+    { Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
+    { Mod4Mask,                     XK_2,      spawn,          {.v = switchmonitor2 } }, // 屏幕检测，双监视器
 };
 
 /* button definitions */

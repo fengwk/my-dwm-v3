@@ -46,11 +46,15 @@ install: all
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	ln -fs $(CURDIR)/scripts/dwmc $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-termcmd $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-switchmonitor $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-changewallpaper $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwmc
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-termcmd
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-switchmonitor
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-changewallpaper
 
 .PHONY: all options clean dist install uninstall

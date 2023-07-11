@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# 公司
+# 0: +*DP-1-1 3840/602x2160/339+0+0  DP-1-1
+# 1: +eDP-1-1 3264/344x1836/194+3840+0  eDP-1-1
+
+edp1=$(xrandr | grep -P -w -o "^eDP|eDP1|eDP-1|eDP-1-1" | head -n 1)
+hdmi1=$(xrandr | grep -P -w -o "HDMI-A-0" | head -n 1)
+dp1=$(xrandr | grep -P -w -o "DisplayPort-0|DP1|DP-1-1|DP-1" | head -n 1)
+dp2=$(xrandr | grep -P -w -o "DisplayPort-1|DP2|DP-1-2|DP-2" | head -n 1)
+
+auto() {
+
+  mon1=$(xrandr | grep -w connected | grep -P -w -o "$hdmi1|$dp1|$dp2")
+  if [ -z "$mon1" ]; then
+    xrandr --output $hdmi1 --off --output $dp1 --off --output $dp2 --off --output $edp1 --auto
+    wp-default.sh
+  else
+    if [ $1 -eq 1 ]; then
+      xrandr --output $mon1 --auto --output $edp1 --off
+    else
+      xrandr --output $mon1 --auto  --primary --output $edp1 --auto --right-of $mon1
+    fi
+    mon1_sz=$(xrandr | grep -w -A 1 $mon1 | sed -n '2p' | awk '{print $1}')
+    if [ $mon1_sz != '3840x2160' ]; then
+      xrandr --output $mon1 --scale 1.5x1.5
+      xrandr --output $edp1 --pos 3840x0
+    else
+      xrandr --output $mon1 --scale 1x1
+    fi
+    wp-default.sh
+  fi
+}
+
+auto $@
