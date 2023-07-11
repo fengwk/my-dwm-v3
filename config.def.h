@@ -135,11 +135,11 @@ static const int resizehints = 1;    /* 1 means respect size hints in tiled resi
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
-	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
-	{ "[M]",      monocle },
-	{ "###",      grid },    /* 网格布局 */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
+	/* symbol     arrange function    append */
+	{ "[]=",      tile,               0 },    /* first entry is default */
+	{ "[M]",      monocle,            0 },
+	{ "###",      grid,               1 },    /* 网格布局 */
+	{ "><>",      NULL,               0 },    /* no layout function means floating behavior */
 };
 
 /* key definitions */
