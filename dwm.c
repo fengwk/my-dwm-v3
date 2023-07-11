@@ -89,6 +89,8 @@ enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms *
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
 enum { MOUSE_UP, MOUSE_RIGHT, MOUSE_DOWM, MOUSE_LEFT }; /* movemouse */
+enum { WIN_UP, WIN_DOWN, WIN_LEFT, WIN_RIGHT }; /* movewin */
+enum { V_EXPAND, V_REDUCE, H_EXPAND, H_REDUCE }; /* resizewins */
 
 typedef union {
 	int i;
@@ -232,6 +234,7 @@ static void grid(Monitor *m);
 static void hide(const Arg *arg);
 static void hidewin(Client *c);
 static void incnmaster(const Arg *arg);
+static int inarea(int x, int y, int rx, int ry, int rw, int rh);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
@@ -242,6 +245,7 @@ static void motionnotify(XEvent *e);
 static void mousefocus(const Arg *arg);
 static void mousemove(const Arg *arg);
 static void movemouse(const Arg *arg);
+static void movewin(const Arg *arg);
 static Client *nexttiled(Client *c);
 static void pop(Client *c);
 static void propertynotify(XEvent *e);
@@ -254,6 +258,7 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void resizerequest(XEvent *e);
 static void restack(Monitor *m);
+static void resizewin(const Arg *arg);
 static void run(void);
 static void runautosh(const char autoblocksh[], const char autosh[]);
 static void scan(void);
@@ -1446,6 +1451,11 @@ isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 }
 #endif /* XINERAMA */
 
+int
+inarea(int x, int y, int rx, int ry, int rw, int rh) {
+  return x > rx && x < rx + rw && y > ry && y < ry + rh;
+}
+
 void
 keypress(XEvent *e)
 {
@@ -1755,6 +1765,117 @@ movemouse(const Arg *arg)
 	}
 }
 
+void
+movewin(const Arg *arg)
+{
+    Client *c;
+    int x, y, nx, ny;
+    int px, py;
+
+    c = selmon->sel;
+    if (!c || c->isfullscreen)
+        return;
+    if (!c->isfloating)
+        togglefloating(NULL);
+    x = nx = c->x; // x, next x
+    y = ny = c->y; // y, next y
+    int gap = fgappx;
+    switch (arg->ui) {
+        case WIN_UP:
+            ny -= c->mon->wh / movewinthresholdv;
+            // 窗口吸附
+            for (Client *tc = c->mon->clients; tc; tc = tc->next) {
+              if (c->y > tc->y + HEIGHT(tc) + gap && tc->y + HEIGHT(tc) + gap > ny) {
+                ny = tc->y + HEIGHT(tc) + gap;
+              } else if (c->y + HEIGHT(c) > tc->y - gap && tc->y - gap > ny + HEIGHT(c)) {
+                ny = tc->y - gap - HEIGHT(c);
+              }
+            }
+            // 边缘吸附
+            if (c->y + HEIGHT(c) > c->mon->wy + c->mon->wh - gap && c->mon->wy + c->mon->wh - gap > ny + HEIGHT(c)) {
+              ny = c->mon->wy + c->mon->wh - gap - HEIGHT(c);
+            } else if (c->y > c->mon->wy + gap && c->mon->wy + gap > ny) {
+              ny = c->mon->wy + gap;
+            }
+            // 限制出窗
+            if (ny < c->mon->wy - HEIGHT(c))
+              ny = MAX(ny, c->mon->wy - HEIGHT(c) + gap + borderpx);
+            break;
+        case WIN_DOWN:
+            ny += c->mon->wh / movewinthresholdv;
+            // 窗口吸附
+            for (Client *tc = c->mon->clients; tc; tc = tc->next) {
+              if (tc != c && ISVISIBLE(tc) && !HIDDEN(tc) && tc->isfloating && !tc->isfullscreen) {
+                if (c->y + HEIGHT(c) < tc->y - gap && tc->y - gap < ny + HEIGHT(c)) {
+                  ny = tc->y - gap - HEIGHT(c);
+                } else if (c->y < tc->y + HEIGHT(tc) + gap && tc->y + HEIGHT(tc) + gap < ny) {
+                  ny = tc->y + HEIGHT(tc) + gap;
+                }
+              }
+            }
+            // 边缘吸附
+            if (c->y < c->mon->wy + gap && c->mon->wy + gap < ny) {
+             ny = c->mon->wy + gap;
+            } else if (c->y + HEIGHT(c) < c->mon->wy + c->mon->wh - gap && c->mon->wy + c->mon->wh - gap < ny + HEIGHT(c)) {
+             ny = c->mon->wy + c->mon->wh - gap - HEIGHT(c);
+            }
+            // 限制出窗
+            if (ny > c->mon->wy + c->mon->wh - gap)
+              ny = c->mon->wy + c->mon->wh - gap;
+            break;
+        case WIN_LEFT:
+            nx -= c->mon->ww / movewinthresholdh;
+            // 窗口吸附
+            for (Client *tc = c->mon->clients; tc; tc = tc->next) {
+              if (tc != c && ISVISIBLE(tc) && !HIDDEN(tc) && tc->isfloating && !tc->isfullscreen) {
+                if (c->x > tc->x + WIDTH(tc) + gap && tc->x + WIDTH(tc) + gap > nx) {
+                  nx = tc->x + WIDTH(tc) + gap;
+                } else if (c->x + WIDTH(c) > tc->x - gap && tc->x - gap > nx + WIDTH(c)) {
+                  nx = tc->x - gap - WIDTH(c);
+                }
+              }
+            }
+            // 边缘吸附
+            if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww - gap && c->mon->wx + c->mon->ww - gap > nx + WIDTH(c)) {
+              nx = c->mon->wx + c->mon->ww - gap - WIDTH(c);
+            } else if (c->x > c->mon->wx + gap && c->mon->wx + gap > nx) {
+              nx = c->mon->wx + gap;
+            }
+            // 限制出窗
+            if (nx < c->mon->wx - WIDTH(c))
+              nx = c->mon->wx - WIDTH(c) + gap + borderpx;
+            break;
+        case WIN_RIGHT:
+            nx += c->mon->ww / movewinthresholdh;
+            // 窗口吸附
+            for (Client *tc = c->mon->clients; tc; tc = tc->next) {
+              if (tc != c && ISVISIBLE(tc) && !HIDDEN(tc) && tc->isfloating && !tc->isfullscreen) {
+                if (c->x + WIDTH(c) < tc->x - gap && tc->x - gap < nx + WIDTH(c)) {
+                  nx = tc->x - gap - WIDTH(c);
+                } else if (c->x < tc->x + WIDTH(tc) + gap && tc->x + WIDTH(tc) + gap < nx) {
+                  nx = tc->x + WIDTH(tc) + gap;
+                }
+              }
+            }
+            // 边缘吸附
+            if (c->x < c->mon->wx + gap && c->mon->wx + gap < nx) {
+              nx = c->mon->wx + gap;
+            } else if (c->x + WIDTH(c) < c->mon->wx + c->mon->ww - gap && c->mon->wx + c->mon->ww - gap < nx + WIDTH(c)) {
+              nx = c->mon->wx + c->mon->ww - gap - WIDTH(c);
+            }
+            // 限制出窗
+            if (nx > c->mon->wx + c->mon->ww - gap)
+              nx = c->mon->wx + c->mon->ww - gap;
+            break;
+    }
+
+    resize(c, nx, ny, c->w, c->h, 1);
+    getrootptr(&px, &py);
+    if (inarea(px, py, x, y, c->w, c->h)) {
+      XWarpPointer(dpy, None, root, 0, 0, 0, 0, nx - x + px, ny - y + py);
+    }
+}
+
 Client *
 nexttiled(Client *c)
 {
@@ -1992,6 +2113,51 @@ restack(Monitor *m)
 	}
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
+}
+
+void
+resizewin(const Arg *arg)
+{
+    Client *c;
+    int w, h, nw, nh;
+    int px, py;
+
+    c = selmon->sel;
+    if (!c || c->isfullscreen)
+        return;
+    if (!c->isfloating)
+        togglefloating(NULL);
+    w = nw = c->w;
+    h = nh = c->h;
+    switch (arg->ui) {
+        case H_EXPAND:
+            nw += selmon->wh / resizewinthresholdv;
+            break;
+        case H_REDUCE:
+            nw -= selmon->wh / resizewinthresholdv;
+            break;
+        case V_EXPAND:
+            nh += selmon->ww / resizewinthresholdh;
+            break;
+        case V_REDUCE:
+            nh -= selmon->ww / resizewinthresholdh;
+            break;
+    }
+    nw = MAX(nw, selmon->ww / resizewinthresholdv);
+    nh = MAX(nh, selmon->wh / resizewinthresholdh);
+    if (c->x + nw + 2 * c->bw > selmon->wx + selmon->ww)
+        nw = selmon->wx + selmon->ww - c->x - 2 * c->bw;
+    if (c->y + nh + 2 * c->bw > selmon->wy + selmon->wh)
+        nh = selmon->wy + selmon->wh - c->y - 2 * c->bw;
+    resize(c, c->x, c->y, nw, nh, 1);
+    getrootptr(&px, &py);
+    if (inarea(px, py, c->x, c->y, w, h)) {
+      px = MAX(px, c->x + 1);
+      px = MIN(px, c->x + nw - 1);
+      py = MAX(py, c->y + 1);
+      py = MIN(py, c->y + nh - 1);
+      XWarpPointer(dpy, None, root, 0, 0, 0, 0, px, py);
+    }
 }
 
 void

@@ -3,6 +3,7 @@
 /* appearance */
 static const unsigned int borderpx  = 5;        /* border pixel of windows */
 static unsigned int gappx = 10;                 /* gap pixel between windows */
+static unsigned int fgappx = 0;                 /* gap pixel between windows */
 static unsigned int smartgap = 1;               /* 是否在单个客户端的平铺布局时移除gap */
 static const unsigned int snap = 32;            /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
@@ -28,6 +29,11 @@ static const char *colors[][3]      = {
 	[SchemeSel]  = { col_gray4, col_cyan,  col_sboard },
 	[SchemeHid]  = { col_cyan,  col_gray1, col_cyan   },
 };
+
+static const int movewinthresholdv  = 12; /* 垂直：这个阈值越大movewin操作改变的范围越小 */
+static const int movewinthresholdh  = 16; /* 水平：这个阈值越大movewin操作改变的范围越小 */
+static const int resizewinthresholdv= 20; /* 垂直：这个阈值越大resizewin操作改变的范围越小 */
+static const int resizewinthresholdh= 40; /* 水平：这个阈值越大resizewin操作改变的范围越小 */
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
@@ -206,7 +212,6 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[1]} }, // monocle布局
 	{ MODKEY,                       XK_g,      setlayout,      {.v = &layouts[2]} }, // grid布局
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY|ShiftMask,             XK_f,      togglefullscr,  {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
@@ -250,6 +255,26 @@ static const Key keys[] = {
 	{ MODKEY|ControlMask,              XK_l,         mousemove,       {.ui = MOUSE_RIGHT} }, // 向右移动鼠标光标
 	{ MODKEY|ControlMask,              XK_j,         mousemove,       {.ui = MOUSE_DOWM} },  // 向下移动鼠标光标
 	{ MODKEY|ControlMask,              XK_h,         mousemove,       {.ui = MOUSE_LEFT} },  // 向左移动鼠标光标
+
+	/* 窗口控制 */
+	{ Mod4Mask,                        XK_f,         togglefloating,  {0} },
+	{ Mod4Mask,                        XK_Up,        movewin,         {.ui = WIN_UP} },       // 向上移动窗口
+	{ Mod4Mask,                        XK_Down,      movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
+	{ Mod4Mask,                        XK_Left,      movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
+	{ Mod4Mask,                        XK_Right,     movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
+	{ Mod4Mask,                        XK_k,         movewin,         {.ui = WIN_UP} },       // 向上移动窗口
+	{ Mod4Mask,                        XK_j,         movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
+	{ Mod4Mask,                        XK_h,         movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
+	{ Mod4Mask,                        XK_l,         movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
+	{ Mod4Mask|ShiftMask,              XK_k,         resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
+	{ Mod4Mask|ShiftMask,              XK_j,         resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
+	{ Mod4Mask|ShiftMask,              XK_h,         resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
+	{ Mod4Mask|ShiftMask,              XK_l,         resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
+	{ Mod4Mask|ShiftMask,              XK_Up,        resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
+	{ Mod4Mask|ShiftMask,              XK_Down,      resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
+	{ Mod4Mask|ShiftMask,              XK_Left,      resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
+	{ Mod4Mask|ShiftMask,              XK_Right,     resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
+
 };
 
 /* button definitions */
