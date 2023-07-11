@@ -214,8 +214,8 @@ static void expose(XEvent *e);
 static void focus(Client *c);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
-static void focusstackvis(const Arg *arg);
-static void focusstackhid(const Arg *arg);
+static void focusstackvis(const Arg *arg); // 仅浏览可见的窗口
+static void focusstackhid(const Arg *arg); // 可以浏览隐藏的窗口
 static void focusstack(int inc, int vis);
 static Atom getatomprop(Client *c, Atom prop);
 static void setgappx(const Arg *arg);
@@ -300,6 +300,8 @@ static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
 static void switchenternotify(const Arg *arg);
 static void view(const Arg *arg);
+static void viewtoleft(const Arg *arg);
+static void viewtoright(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
@@ -3082,6 +3084,47 @@ view(const Arg *arg)
 
 	focus(NULL);
 	arrange(selmon);
+}
+
+void viewto(unsigned int movebit(unsigned int)) {
+  Monitor *mon = selmon;
+  unsigned int seltags = mon->tagset[mon->seltags] & TAGMASK;
+  // 如果当前不只有一个选中tag则不进行处理
+  if (__builtin_popcount(seltags) != 1) {
+    return;
+  }
+
+  unsigned int nextSeltags = movebit(seltags) & TAGMASK;
+  while (nextSeltags) {
+    int hasVisiable = 0;
+    for (Client *c = mon->clients; c; c = c->next) {
+      if (c->tags & nextSeltags) {
+        hasVisiable = 1;
+        break;
+      }
+    }
+    if (hasVisiable) {
+      view(&(Arg) { .ui = nextSeltags });
+      break;
+    }
+    nextSeltags = movebit(nextSeltags) & TAGMASK;
+  }
+}
+
+unsigned int tagmoveleft(unsigned int tag) {
+  return tag >> 1;
+}
+
+void viewtoleft(const Arg *arg) {
+  viewto(tagmoveleft);
+}
+
+unsigned int tagmoveright(unsigned int tag) {
+  return tag << 1;
+}
+
+void viewtoright(const Arg *arg) {
+  viewto(tagmoveright);
 }
 
 Client *

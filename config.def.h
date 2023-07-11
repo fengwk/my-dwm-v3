@@ -185,10 +185,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_v,      spawn,          {.v = rofi_clipster } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstackvis,  {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstackvis,  {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
+	{ MODKEY,                       XK_j,      focusstackhid,  {.i = +1 } },
+	{ MODKEY,                       XK_k,      focusstackhid,  {.i = -1 } },
+	// { MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
+	// { MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
@@ -220,14 +220,17 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 
-    /* monitor */
-    { Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
-    { Mod4Mask,                     XK_2,      spawn,          {.v = switchmonitor2 } }, // 屏幕检测，双监视器
+	{ MODKEY|ShiftMask,             XK_j,      viewtoleft,     {0} }, // 切换到左侧tag
+	{ MODKEY|ShiftMask,             XK_k,      viewtoright,    {0} }, // 切换到右侧tag
+
+	/* monitor */
+	{ Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
+	{ Mod4Mask,                     XK_2,      spawn,          {.v = switchmonitor2 } }, // 屏幕检测，双监视器
 
 	/* flameshot */
 	{ MODKEY|ShiftMask,             XK_a,      spawn,           {.v = flameshotocrcmd } }, // 截图ocr
 	{ MODKEY,                       XK_a,      spawn,           {.v = flameshotcmd } },    // 截图
-	
+
 	/* scratchpads */
 	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 0 } },
 	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 1 } },
@@ -240,11 +243,15 @@ static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
+	{ ClkTagBar,            0,              Button4,        viewtoleft,     {0} },       // 在tag栏上鼠标上滚切换到上一个tag
+	{ ClkTagBar,            0,              Button5,        viewtoright,    {0} },       // 在tag栏上鼠标上滚切换到下一个tag
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
 	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
+	{ ClkWinTitle,          0,              Button4,        focusstackhid,  {.i = -1} }, // 在标题栏上鼠标上滚切换到上一个客户端
+	{ ClkWinTitle,          0,              Button5,        focusstackhid,  {.i = +1} }, // 在标题栏上鼠标上滚切换到下一个客户端
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
