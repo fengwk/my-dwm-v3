@@ -90,24 +90,42 @@ static const char *taglabels[][2] = {
   { "feh", "" },
 };
 
+/* scratchpads */
+#define SP1 "#sp1"
+#define SP2 "#sp2"
+#define SP3 "#sp3"
+const char *spcmd1[] = {"dwm-sp1", SP1, NULL };
+const char *spcmd2[] = {"dwm-sp2", SP2, NULL };
+const char *spcmd3[] = {"dwm-sp3", SP3, NULL };
+static Sp scratchpads[] = {
+	/* name    cmd  */
+	  {SP1,    spcmd1},
+	  {SP2,    spcmd2},
+	  {SP3,    spcmd3},
+};
+
+/* rules */
 static const Rule rules[] = {
 	/* xprop(1):
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class                 instance    title         tags mask    isfloating     monitor    hideborder */
- 	{ "Peek",                NULL,       NULL,         0,           1,             -1,        0},
- 	{ "popo",                NULL,       NULL,         0,           1,             -1,        1},
- 	{ "wechat.exe",          NULL,       NULL,         0,           1,             -1,        0},
- 	{ "QQ",                  NULL,       NULL,         0,           1,             -1,        0},
- 	{ "feh",                 NULL,       NULL,         0,           1,             -1,        0},
- 	{ "XMind",               NULL,       NULL,         0,           0,             -1,        0},
- 	{ "xiaoyi_assistant",    NULL,       NULL,         1<<8,        0,             -1,        0},
- 	{ "jetbrains-idea",      NULL,       NULL,         0,           0,             -1,        0},
- 	{ "jetbrains-idea-ce",   NULL,       NULL,         0,           0,             -1,        0},
- 	{ "netease-cloud-music", NULL,       NULL,         0,           1,             -1,        0},
- 	{ "Alacritty",           NULL,       "#todolist",  0,           1,             -1,        0},
- 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1, -1,        0},
+	/* class                 instance     title         tags mask    isfloating     monitor    hideborder */
+	{ NULL,                  SP1,         NULL,         SPTAG(0),    1,             -1,        0},
+	{ NULL,                  SP2,         NULL,         SPTAG(1),    1,             -1,        0},
+	{ NULL,                  SP3,         NULL,         SPTAG(2),    1,             -1,        0},
+ 	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0},
+ 	{ "popo",                NULL,        NULL,         0,           1,             -1,        1},
+ 	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0},
+ 	{ "QQ",                  NULL,        NULL,         0,           1,             -1,        0},
+ 	{ "feh",                 NULL,        NULL,         0,           1,             -1,        0},
+ 	{ "XMind",               NULL,        NULL,         0,           0,             -1,        0},
+ 	{ "xiaoyi_assistant",    NULL,        NULL,         1<<8,        0,             -1,        0},
+ 	{ "jetbrains-idea",      NULL,        NULL,         0,           0,             -1,        0},
+ 	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0},
+ 	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0},
+ 	{ "Alacritty",           NULL,        "#todolist",  0,           1,             -1,        0},
+ 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0},
 };
 
 /* layout(s) */
@@ -207,6 +225,11 @@ static const Key keys[] = {
 	/* flameshot */
 	{ MODKEY|ShiftMask,             XK_a,      spawn,           {.v = flameshotocrcmd } }, // 截图ocr
 	{ MODKEY,                       XK_a,      spawn,           {.v = flameshotcmd } },    // 截图
+	
+	/* scratchpads */
+	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 0 } },
+	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 1 } },
+	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 2 } },
 };
 
 /* button definitions */

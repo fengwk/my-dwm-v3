@@ -50,6 +50,9 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-changewallpaper $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshot $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshotocr $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-sp1 $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-sp2 $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-sp3 $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
@@ -60,5 +63,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-changewallpaper
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshot
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshotocr
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp1
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp2
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp3
 
 .PHONY: all options clean dist install uninstall
