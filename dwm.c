@@ -91,6 +91,7 @@ enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
 enum { MOUSE_UP, MOUSE_RIGHT, MOUSE_DOWM, MOUSE_LEFT }; /* movemouse */
 enum { WIN_UP, WIN_DOWN, WIN_LEFT, WIN_RIGHT }; /* movewin */
 enum { V_EXPAND, V_REDUCE, H_EXPAND, H_REDUCE }; /* resizewins */
+enum { SWITCH_WIN,  SWITCH_SAME_TAG,  SWITCH_DIFF_TAG }; /* switch mode */
 
 typedef union {
 	int i;
@@ -143,6 +144,7 @@ typedef struct {
 } Layout;
 
 typedef struct Pertag Pertag;
+typedef struct ClientAccNode ClientAccNode;
 struct Monitor {
 	char ltsymbol[16];
 	float mfact;
@@ -166,6 +168,7 @@ struct Monitor {
 	Window barwin;
 	const Layout *lt[2];
 	Pertag *pertag;
+	ClientAccNode *accstack;
 };
 
 typedef struct {
@@ -189,7 +192,13 @@ typedef struct {
 	const void *cmd;
 } Sp;
 
+struct ClientAccNode {
+  Client *c;
+  ClientAccNode *next;
+};
+
 /* function declarations */
+static void addaccstack(Client *c);
 static void applyrules(Client *c);
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
@@ -259,6 +268,7 @@ static void resizemouse(const Arg *arg);
 static void resizerequest(XEvent *e);
 static void restack(Monitor *m);
 static void resizewin(const Arg *arg);
+static void removeaccstack(Client *c);
 static void run(void);
 static void runautosh(const char autoblocksh[], const char autosh[]);
 static void scan(void);
@@ -279,6 +289,7 @@ static int solitary(Client *c);
 static void spawn(const Arg *arg);
 static void switchtoclient(Client *c);
 static void switchtomon(Monitor *m);
+static void switchprevclient(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
@@ -286,6 +297,8 @@ static void tile(Monitor *m);
 static void togglebar(const Arg *arg);
 static void togglehide(const Arg *arg);
 static void togglefloating(const Arg *arg);
+static void togglefloating0(int x, int y, int w, int h);
+static void togglefloatingacenter(const Arg *arg);
 static void togglefullscr(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -384,6 +397,18 @@ unsigned int tagw[LENGTH(tags)];
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
+void
+addaccstack(Client *c) {
+  if (selmon && c) {
+    removeaccstack(c);
+
+    ClientAccNode *h = ecalloc(1, sizeof(ClientAccNode));
+    h->c = c;
+    h->next = selmon->accstack;
+    selmon->accstack = h;
+  }
+}
+
 void
 applyrules(Client *c)
 {
@@ -673,6 +698,15 @@ cleanupmon(Monitor *mon)
 	}
 	XUnmapWindow(dpy, mon->barwin);
 	XDestroyWindow(dpy, mon->barwin);
+	if (mon->pertag) {
+		free(mon->pertag);
+	}
+	ClientAccNode *accnode = mon->accstack;
+	while (accnode) {
+		ClientAccNode *next = accnode->next;
+		free(accnode);
+		accnode = next;
+	}
 	free(mon);
 }
 
@@ -859,6 +893,7 @@ createmon(void)
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+	m->accstack = NULL;
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
@@ -898,6 +933,8 @@ detach(Client *c)
 
 	for (tc = &c->mon->clients; *tc && *tc != c; tc = &(*tc)->next);
 	*tc = c->next;
+
+	removeaccstack(c);
 }
 
 void
@@ -1121,6 +1158,7 @@ focus(Client *c)
 	}
 	selmon->sel = c;
 	drawbars();
+	addaccstack(c);
 }
 
 /* there are some broken focus acquiring clients needing extra handling */
@@ -2161,6 +2199,26 @@ resizewin(const Arg *arg)
 }
 
 void
+removeaccstack(Client *c) {
+  for (Monitor *m = mons; m; m = m->next) {
+    ClientAccNode **cur = &m->accstack;
+    while (*cur && (*cur)->c != c) {
+      cur = &(*cur)->next;
+    }
+
+    if (*cur) {
+      ClientAccNode *curfree = *cur;
+      if ((*cur)->next) {
+        *cur = (*cur)->next;
+      } else {
+        *cur = NULL;
+      }
+      free(curfree);
+    }
+  }
+}
+
+void
 run(void)
 {
 	XEvent ev;
@@ -2724,15 +2782,31 @@ togglehide(const Arg *arg) {
 void
 togglefloating(const Arg *arg)
 {
+	togglefloating0(selmon->sel->x, selmon->sel->y, selmon->sel->w, selmon->sel->h);
+}
+
+void
+togglefloating0(int x, int y, int w, int h)
+{
 	if (!selmon->sel)
 		return;
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
-	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+	int presolitary = selmon->sel ? solitary(selmon->sel) : -1; // 记录之前状态是否为solitary
+	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed; // 修改浮动状态
+	if (presolitary >= 0 && presolitary && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
+		XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
 	if (selmon->sel->isfloating)
-		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-			selmon->sel->w, selmon->sel->h, 0);
+		resize(selmon->sel, x, y, w, h, 0);
 	arrange(selmon);
+}
+
+void togglefloatingacenter(const Arg *arg) {
+	int cw = (selmon->ww) * 0.7;
+	int ch = (selmon->wh) * 0.65;
+	int x = selmon->wx + (selmon->ww - cw) / 2;
+	int y = selmon->wy + (selmon->wh - ch) / 2;
+	togglefloating0(x, y, cw, ch);
 }
 
 void
@@ -3447,6 +3521,43 @@ switchtomon(Monitor *m) {
 		selmon = m;
 		focus(NULL);
 	}
+}
+
+void
+switchprevclient(const Arg *arg) {
+
+	if (!selmon || !selmon->accstack) {
+		return;
+	}
+
+	unsigned int switchmode = arg->ui;
+
+	Client *found = NULL;
+	ClientAccNode *node = selmon->accstack;
+	for (; node; node = node->next) {
+		Client *c = node->c;
+		if ((c->tags & TAGMASK) && (!selmon->sel || selmon->sel != c)) {
+			if (switchmode == SWITCH_WIN) {
+				found = c;
+				break;
+			} else if (switchmode == SWITCH_SAME_TAG) {
+				if (selmon->tagset[selmon->seltags] & c->tags) {
+					found = c;
+					break;
+				}
+			} else if (switchmode == SWITCH_DIFF_TAG) {
+				if (!(selmon->tagset[selmon->seltags] & c->tags)) {
+					found = c;
+					break;
+				}
+			}
+		}
+	}
+
+	if (found)
+		switchtoclient(found);
+	else if (switchmode != SWITCH_WIN)
+		switchprevclient(& (Arg) {.ui = SWITCH_WIN});
 }
 
 Monitor *

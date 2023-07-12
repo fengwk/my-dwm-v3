@@ -196,16 +196,16 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_v,      spawn,          {.v = rofi_clipster } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstackhid,  {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstackhid,  {.i = -1 } },
-	// { MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
-	// { MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
+	{ MODKEY,                       XK_j,      focusstackvis,  {.i = +1 } },
+	{ MODKEY,                       XK_k,      focusstackvis,  {.i = -1 } },
+	{ Mod4Mask,                     XK_j,      focusstackhid,  {.i = +1 } },
+	{ Mod4Mask,                     XK_k,      focusstackhid,  {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
+	// { MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} }, // 平铺布局
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[3]} }, // 浮动布局
@@ -219,7 +219,6 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-	{ Mod4Mask,                     XK_h,      togglehide,     {0} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -232,6 +231,10 @@ static const Key keys[] = {
 
 	{ MODKEY|ShiftMask,             XK_j,      viewtoleft,     {0} }, // 切换到左侧tag
 	{ MODKEY|ShiftMask,             XK_k,      viewtoright,    {0} }, // 切换到右侧tag
+
+	{ MODKEY,                       XK_Tab,    switchprevclient,{.ui = SWITCH_DIFF_TAG} },    // 切换到上一个不同tag的聚焦窗口
+	{ Mod4Mask,                     XK_Tab,    switchprevclient,{.ui = SWITCH_SAME_TAG} },    // 切换到上一个相同tag的聚焦窗口
+
 
 	/* monitor */
 	{ Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
@@ -247,33 +250,34 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 2 } },
 
 	/* 鼠标控制 */
-	{ MODKEY|ControlMask,              XK_z,         spawn,           {.v = mouseclick1} },  // 鼠标左键点击
-	{ MODKEY|ControlMask,              XK_x,         spawn,           {.v = mouseclick2} },  // 鼠标中键点击
-	{ MODKEY|ControlMask,              XK_c,         spawn,           {.v = mouseclick3} },  // 鼠标右键点击
-	{ MODKEY|ControlMask,              XK_f,         mousefocus,      {0} },                 // 鼠标聚焦到当前选中窗口
-	{ MODKEY|ControlMask,              XK_k,         mousemove,       {.ui = MOUSE_UP} },    // 向上移动鼠标光标
-	{ MODKEY|ControlMask,              XK_l,         mousemove,       {.ui = MOUSE_RIGHT} }, // 向右移动鼠标光标
-	{ MODKEY|ControlMask,              XK_j,         mousemove,       {.ui = MOUSE_DOWM} },  // 向下移动鼠标光标
-	{ MODKEY|ControlMask,              XK_h,         mousemove,       {.ui = MOUSE_LEFT} },  // 向左移动鼠标光标
+	{ MODKEY|ControlMask,           XK_z,         spawn,           {.v = mouseclick1} },  // 鼠标左键点击
+	{ MODKEY|ControlMask,           XK_x,         spawn,           {.v = mouseclick2} },  // 鼠标中键点击
+	{ MODKEY|ControlMask,           XK_c,         spawn,           {.v = mouseclick3} },  // 鼠标右键点击
+	{ MODKEY|ControlMask,           XK_f,         mousefocus,      {0} },                 // 鼠标聚焦到当前选中窗口
+	{ MODKEY|ControlMask,           XK_k,         mousemove,       {.ui = MOUSE_UP} },    // 向上移动鼠标光标
+	{ MODKEY|ControlMask,           XK_l,         mousemove,       {.ui = MOUSE_RIGHT} }, // 向右移动鼠标光标
+	{ MODKEY|ControlMask,           XK_j,         mousemove,       {.ui = MOUSE_DOWM} },  // 向下移动鼠标光标
+	{ MODKEY|ControlMask,           XK_h,         mousemove,       {.ui = MOUSE_LEFT} },  // 向左移动鼠标光标
 
 	/* 窗口控制 */
-	{ Mod4Mask,                        XK_f,         togglefloating,  {0} },
-	{ Mod4Mask,                        XK_Up,        movewin,         {.ui = WIN_UP} },       // 向上移动窗口
-	{ Mod4Mask,                        XK_Down,      movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
-	{ Mod4Mask,                        XK_Left,      movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
-	{ Mod4Mask,                        XK_Right,     movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
-	{ Mod4Mask,                        XK_k,         movewin,         {.ui = WIN_UP} },       // 向上移动窗口
-	{ Mod4Mask,                        XK_j,         movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
-	{ Mod4Mask,                        XK_h,         movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
-	{ Mod4Mask,                        XK_l,         movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
-	{ Mod4Mask|ShiftMask,              XK_k,         resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
-	{ Mod4Mask|ShiftMask,              XK_j,         resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
-	{ Mod4Mask|ShiftMask,              XK_h,         resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
-	{ Mod4Mask|ShiftMask,              XK_l,         resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
-	{ Mod4Mask|ShiftMask,              XK_Up,        resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
-	{ Mod4Mask|ShiftMask,              XK_Down,      resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
-	{ Mod4Mask|ShiftMask,              XK_Left,      resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
-	{ Mod4Mask|ShiftMask,              XK_Right,     resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
+	{ Mod4Mask,                     XK_h,         togglehide,      {0} },                  // 窗口隐藏开关
+	{ Mod4Mask,                     XK_f,         togglefloatingacenter,  {0} },           // 窗口浮动开关
+	{ Mod4Mask|ControlMask,         XK_Up,        movewin,         {.ui = WIN_UP} },       // 向上移动窗口
+	{ Mod4Mask|ControlMask,         XK_Down,      movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
+	{ Mod4Mask|ControlMask,         XK_Left,      movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
+	{ Mod4Mask|ControlMask,         XK_Right,     movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
+	{ Mod4Mask|ControlMask,         XK_k,         movewin,         {.ui = WIN_UP} },       // 向上移动窗口
+	{ Mod4Mask|ControlMask,         XK_j,         movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口
+	{ Mod4Mask|ControlMask,         XK_h,         movewin,         {.ui = WIN_LEFT} },     // 向左移动窗口
+	{ Mod4Mask|ControlMask,         XK_l,         movewin,         {.ui = WIN_RIGHT} },    // 向右移动窗口
+	{ Mod4Mask|ShiftMask,           XK_k,         resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
+	{ Mod4Mask|ShiftMask,           XK_j,         resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
+	{ Mod4Mask|ShiftMask,           XK_h,         resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
+	{ Mod4Mask|ShiftMask,           XK_l,         resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
+	{ Mod4Mask|ShiftMask,           XK_Up,        resizewin,       {.ui = V_REDUCE} },     // 垂直减少窗口大小
+	{ Mod4Mask|ShiftMask,           XK_Down,      resizewin,       {.ui = V_EXPAND} },     // 垂直增加窗口大小
+	{ Mod4Mask|ShiftMask,           XK_Left,      resizewin,       {.ui = H_REDUCE} },     // 水平减少窗口大小
+	{ Mod4Mask|ShiftMask,           XK_Right,     resizewin,       {.ui = H_EXPAND} },     // 水平增加窗口大小
 
 };
 
