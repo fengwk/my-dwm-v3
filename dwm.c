@@ -53,7 +53,7 @@
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
-#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
+#define ISVISIBLE(C)            (((C->tags & C->mon->tagset[C->mon->seltags]) || C->mon->overview))
 #define HIDDEN(C)               ((getstate(C->win) == IconicState))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
@@ -86,7 +86,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
-enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+enum { ClkTagBar, ClkTagOV, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
 enum { MOUSE_UP, MOUSE_RIGHT, MOUSE_DOWM, MOUSE_LEFT }; /* movemouse */
 enum { WIN_UP, WIN_DOWN, WIN_LEFT, WIN_RIGHT }; /* movewin */
@@ -169,6 +169,7 @@ struct Monitor {
 	const Layout *lt[2];
 	Pertag *pertag;
 	ClientAccNode *accstack;
+	int overview;
 };
 
 typedef struct {
@@ -300,6 +301,7 @@ static void togglefloating(const Arg *arg);
 static void togglefloating0(int x, int y, int w, int h);
 static void togglefloatingacenter(const Arg *arg);
 static void togglefullscr(const Arg *arg);
+static void toggleoverview(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
@@ -391,6 +393,7 @@ struct Pertag {
 	int showbars[LENGTH(tags) + 1]; /* display bar for the current tag */
 };
 
+unsigned int ovtagw = 0;
 unsigned int tagw[LENGTH(tags)];
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -540,9 +543,13 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
-	if (m->lt[m->sellt]->arrange)
-		m->lt[m->sellt]->arrange(m);
+	if (m->overview)
+		grid(m);
+	else {
+		strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
+		if (m->lt[m->sellt]->arrange)
+			m->lt[m->sellt]->arrange(m);
+	}
 }
 
 void
@@ -595,23 +602,29 @@ buttonpress(XEvent *e)
 	}
 	if (ev->window == selmon->barwin) {
 		i = x = 0;
-		for (c = m->clients; c; c = c->next)
-			occ |= c->tags == 255 ? 0 : c->tags;
-		do {
-			/* do not reserve space for vacant tags */
-			if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
-				continue;
-			x += tagw[i];
-		} while (ev->x >= x && ++i < LENGTH(tags));
-		if (i < LENGTH(tags)) {
+		if (m->overview) {
+			x = ovtagw;
+		} else {
+			for (c = m->clients; c; c = c->next)
+				occ |= c->tags == 255 ? 0 : c->tags;
+			do {
+				/* do not reserve space for vacant tags */
+				if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
+					continue;
+				x += tagw[i];
+			} while (ev->x >= x && ++i < LENGTH(tags));
+		}
+		if (m->overview && ev->x < x) // OVERVIEW
+			click = ClkTagOV;
+		else if (!m->overview && i < LENGTH(tags)) { // tags
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
+		} else if (ev->x < x + TEXTW(selmon->ltsymbol)) // layout
 			click = ClkLtSymbol;
 		/* 2px right padding */
-		else if (ev->x > selmon->ww - TEXTW(stext) + lrpad - 2 - getsystraywidth())
+		else if (ev->x > selmon->ww - TEXTW(stext) + lrpad - 2 - getsystraywidth()) // status line
 			click = ClkStatusText;
-		else {
+		else { // titles
 			x += TEXTW(selmon->ltsymbol);
 			c = m->clients;
 
@@ -894,6 +907,7 @@ createmon(void)
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
 	m->accstack = NULL;
+	m->overview = 0;
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
@@ -1020,21 +1034,28 @@ drawbar(Monitor *m)
 			}
 	}
 	x = 0;
-	for (i = 0; i < LENGTH(tags); i++) {
-		/* do not draw vacant tags */
-		if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
-			continue;
-
-		if (masterclientontag[i]) {
-			snprintf(tagdisp, 64, ptagf, tags[i], masterclientontag[i]);
-			free(masterclientontag[i]);
-		} else
-			snprintf(tagdisp, 64, etagf, tags[i]);
-		masterclientontag[i] = tagdisp;
-		tagw[i] = w = TEXTW(masterclientontag[i]);
-		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, lrpad / 2, masterclientontag[i], urg & 1 << i);
+	if (m->overview) {
+		ovtagw = w = TEXTW(overviewtag);
+		drw_setscheme(drw, scheme[SchemeSel]);
+		drw_text(drw, x, 0, w, bh, lrpad / 2, overviewtag, 0);
 		x += w;
+	} else {
+		for (i = 0; i < LENGTH(tags); i++) {
+			/* do not draw vacant tags */
+			if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
+				continue;
+
+			if (masterclientontag[i]) {
+				snprintf(tagdisp, 64, ptagf, tags[i], masterclientontag[i]);
+				free(masterclientontag[i]);
+			} else
+				snprintf(tagdisp, 64, etagf, tags[i]);
+			masterclientontag[i] = tagdisp;
+			tagw[i] = w = TEXTW(masterclientontag[i]);
+			drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+			drw_text(drw, x, 0, w, bh, lrpad / 2, masterclientontag[i], urg & 1 << i);
+			x += w;
+		}
 	}
 	w = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, scheme[SchemeNorm]);
@@ -2660,7 +2681,7 @@ solitary(Client *c)
 	return ((nexttiled(c->mon->clients) == c && !nexttiled(c->next)) // 可见范围内仅有指定的平铺客户端
 	    || &monocle == c->mon->lt[c->mon->sellt]->arrange) // 或者当前是monocle布局
 	    && !c->isfullscreen && !c->isfloating // 并且指定的客户端不是这些情况
-	    && NULL != c->mon->lt[c->mon->sellt]->arrange;
+	    && NULL != c->mon->lt[c->mon->sellt]->arrange && !selmon->overview;
 }
 
 void
@@ -2815,6 +2836,17 @@ togglefullscr(const Arg *arg)
 {
   if(selmon->sel)
     setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
+}
+
+void
+toggleoverview(const Arg *arg) {
+	selmon->overview ^= 1;
+	arrange(selmon);
+	if (selmon->overview) {
+		focus(NULL);
+	} else if (selmon->sel) {
+		switchtoclient(selmon->sel);
+	}
 }
 
 void
@@ -3349,7 +3381,7 @@ view(const Arg *arg)
 	int i;
 	unsigned int tmptag;
 
-	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags] || selmon->overview)
 		return;
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK) {

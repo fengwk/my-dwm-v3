@@ -38,6 +38,9 @@ static const int resizewinthresholdh= 40; /* 水平：这个阈值越大resizewi
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
+// overview tag
+static const char *overviewtag = "OVERVIEW";
+
 static const char ptagf[] = "%s %s"; /* format of a tag label */
 static const char etagf[] = "%s"; /* format of an empty tag */
 static const char *taglabels[][2] = {
@@ -235,6 +238,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_Tab,    switchprevclient,{.ui = SWITCH_DIFF_TAG} },    // 切换到上一个不同tag的聚焦窗口
 	{ Mod4Mask,                     XK_Tab,    switchprevclient,{.ui = SWITCH_SAME_TAG} },    // 切换到上一个相同tag的聚焦窗口
 
+	/* overview */
+	{ Mod4Mask,                     XK_space,  toggleoverview, {0} }, // overview
 
 	/* monitor */
 	{ Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
@@ -285,6 +290,7 @@ static const Key keys[] = {
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
+	{ ClkTagOV,             0,              Button1,        toggleoverview, {0} },
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            0,              Button4,        viewtoleft,     {0} },       // 在tag栏上鼠标上滚切换到上一个tag
