@@ -316,7 +316,6 @@ static Signal signals[] = {
 	{ "setmfact",          setmfact },
 	{ "incnmaster",        incnmaster },
 	{ "quit",              quit },
-	{ "switchenternotify", switchenternotify },
 	{ "setgappx",          setgappx },
 	{ "togglesmartgap",    togglesmartgap },
 	{ "showall",           showall },

@@ -18,7 +18,7 @@ case $# in
 	;;
 2)
 	case $1 in
-	switchenternotify | setgappx)
+	setgappx)
 		signal $1 ui $2
 		;;
 	incnmaster)

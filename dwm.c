@@ -323,7 +323,6 @@ static void updatesystrayiconstate(Client *i, XPropertyEvent *ev);
 static void updatetitle(Client *c);
 static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
-static void switchenternotify(const Arg *arg);
 static void view(const Arg *arg);
 static void viewtoleft(const Arg *arg);
 static void viewtoright(const Arg *arg);
@@ -371,7 +370,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
 static int running = 1;
 static Cur *cursor[CurLast];
-static int enableenternotify = 1; // 是否启用enternotify
 static Clr **scheme;
 static Display *dpy;
 static Drw *drw;
@@ -1112,23 +1110,26 @@ void
 enternotify(XEvent *e)
 {
 	Client *c;
-	Monitor *m;
+	// Monitor *m;
 	XCrossingEvent *ev = &e->xcrossing;
-  // 未启用enternotify的情况下直接退出
-  if (!enableenternotify) {
-    return;
-  }
 
 	if ((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
 		return;
+
 	c = wintoclient(ev->window);
-	m = c ? c->mon : wintomon(ev->window);
-	if (m != selmon) {
-		unfocus(selmon->sel, 1);
-		selmon = m;
-	} else if (!c || c == selmon->sel)
-		return;
-	focus(c);
+	if (c && c->mon == selmon) // 仅处理当前monitor的enternotify其余交给motionnotify处理
+		focus(c);
+	// 发现了下面逻辑会导致一些异常的case
+	// 聚焦在monitor A，A中仅有client X，此时tagmon X到另外的monitor B，monitor聚焦会先到B再回到A，这并不符合预期，经过排查是这里的逻辑导致的
+	// 此时c为NULL，m为之前的monitor，导致最终selmon被错误定位，因此尝试将此处的逻辑修改为仅定位到非NULL的client，窗口逻辑交给motionnotify处理
+	// c = wintoclient(ev->window);
+	// m = c ? c->mon : wintomon(ev->window);
+	// if (m != selmon) {
+	// 	unfocus(selmon->sel, 1);
+	// 	selmon = m;
+	// } else if (!c || c == selmon->sel)
+	// 	return;
+	// focus(c);
 }
 
 void
@@ -1704,9 +1705,10 @@ motionnotify(XEvent *e)
 	Monitor *m;
 	XMotionEvent *ev = &e->xmotion;
 
-	if (ev->window != root)
-		return;
-	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
+	// enternotify由于会在窗口resize时触发，导致tagmon失败，因此取消仅root才响应的限制，将跨窗口的移动逻辑移到motionnotify里，先观察下性能情况，目前打日志看来这里的调用次数应该还可以接受
+	// if (ev->window != root)
+	// 	return;
+	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != selmon) {
 		unfocus(selmon->sel, 1);
 		selmon = m;
 		focus(NULL);
@@ -3345,15 +3347,6 @@ updatewindowtype(Client *c)
 		setfullscreen(c, 1);
 	if (wtype == netatom[NetWMWindowTypeDialog])
 		c->isfloating = 1;
-}
-
-void
-switchenternotify(const Arg *arg) {
-  if (arg->ui) {
-    enableenternotify = 1;
-  } else {
-    enableenternotify = 0;
-  }
 }
 
 void
