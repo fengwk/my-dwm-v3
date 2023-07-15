@@ -168,7 +168,7 @@ static const Layout layouts[] = {
 static const char *termcmd[]  = { "dwm-termcmd", NULL };
 
 /* rofi commands */
-static const char *rofi_run[] = { "rofi-wrapper.sh", "-show", "combi", "-combi-modes", "window,drun,run", "-modes", "combi", NULL };
+static const char *rofi_run[] = { "dwm-rofi", "-show", "combi", "-combi-modes", "window,drun,run", "-modes", "combi", NULL };
 static const char *rofi_browser[] = { "rofi-broswer", NULL };
 static const char *rofi_clipster[] = { "rofi-clipster", NULL };
 

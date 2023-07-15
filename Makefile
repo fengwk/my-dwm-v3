@@ -53,6 +53,7 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-sp1 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp2 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp3 $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-rofi $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
@@ -66,5 +67,6 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp1
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp2
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp3
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofi
 
 .PHONY: all options clean dist install uninstall
