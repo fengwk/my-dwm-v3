@@ -1701,7 +1701,6 @@ monocle(Monitor *m)
 void
 motionnotify(XEvent *e)
 {
-	static Monitor *mon = NULL;
 	Monitor *m;
 	XMotionEvent *ev = &e->xmotion;
 
@@ -1713,7 +1712,6 @@ motionnotify(XEvent *e)
 		selmon = m;
 		focus(NULL);
 	}
-	mon = m;
 }
 
 void
