@@ -294,6 +294,7 @@ static void switchprevclient(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
+static void temporarilyShow(Client *c);
 static void tile(Monitor *m);
 static void togglebar(const Arg *arg);
 static void togglehide(const Arg *arg);
@@ -1247,10 +1248,7 @@ focusstack(int inc, int hid)
 	if (c) {
 		focus(c);
 		restack(selmon);
-		if (HIDDEN(c)) {
-			showwin(c);
-			c->mon->hidsel = 1;
-		}
+		temporarilyShow(c);
 	}
 }
 
@@ -2731,6 +2729,14 @@ tagmon(const Arg *arg)
 }
 
 void
+temporarilyShow(Client *c) {
+	if (c && HIDDEN(c)) {
+		showwin(c);
+		c->mon->hidsel = 1;
+	}
+}
+
+void
 tile(Monitor *m)
 {
 	unsigned int i, n, h, mw, my, ty;
@@ -3535,6 +3541,7 @@ switchtoclient(Client *c) {
 	if (selmon->sel != c) {
 		focus(c);
 		restack(selmon);
+		temporarilyShow(c);
 	}
 }
 
@@ -3560,7 +3567,7 @@ switchprevclient(const Arg *arg) {
 	ClientAccNode *node = selmon->accstack;
 	for (; node; node = node->next) {
 		Client *c = node->c;
-		if ((c->tags & TAGMASK) && (!selmon->sel || selmon->sel != c)) {
+		if ((c->tags & TAGMASK) && (!selmon->sel || selmon->sel != c) && !HIDDEN(c)) {
 			if (switchmode == SWITCH_WIN) {
 				found = c;
 				break;
