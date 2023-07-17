@@ -319,4 +319,5 @@ static Signal signals[] = {
 	{ "setgappx",          setgappx },
 	{ "togglesmartgap",    togglesmartgap },
 	{ "showall",           showall },
+	{ "setenternotify",    setenternotify },
 };

@@ -1,24 +1,23 @@
 #!/bin/bash
 
-# TODO 另外发现的问题，当聚焦在一个隐藏窗口，然后切换到另外的tag时，rofi就会在两个monitor中间出现，而非选中屏幕的中间，可能是隐藏导致了当前没有selclilent？
+# 关闭enternotify
+dwmc setenternotify 0
 
-# 暂时关闭enternotify，这不是确定的，因为信号是异步的，但也不值得花费更大的代价去确保信号执行完成
-# dwmc switchenternotify 0
+# 获取dwm monitor并转为rofi monitor
+dwm_mon_num=$(cat ~/.cache/dwm/status/monitor)
+mon=$(rofi -h | grep -w -B 1 "$(xrandr --listactivemonitors | tail +2 | sed -E 's/ *([0-9]+): +[^ ]+ +[^ ]+ +([^ ]+)/\1 \2/' | grep -E "^$dwm_mon_num" | cut -d ' ' -f 2)" | head -1 | sed -E 's/.*([0-9]+).*/\1/')
 
-# 在dwm中帮助定位正确的monitor
-# 获取dwm中的selmon
-# mnum=$(cat ~/.cache/dwm/status/selmon)
-# 获取selmon的名称，因为直接在rofi中使用num会错乱，但使用name正常
-# mname=$(xrandr --listmonitors | grep -E "^\s+$mnum" | awk '{print $2}' | sed 's/^\+[\*]\?//g')
-
-# 包装命令
-# TODO 强行指定监视器名称有bug，可能来自于rofi？当在另一个窗口打开时成功开启了，但rofi看起来好像在后台未关闭导致所有键盘输入失效，多次重复后xorg发生了崩溃，猜测可能新打开应用的层次有冲突？
-# rofi -m $mname "$@"
-# 目前仍使用配置文件中指定的打开方式打开，这种方式目前会导致副显示器在没有任何窗口时rofi自动定位到主显示器上，其它行为目前看正常
-rofi "$@"
+# 执行rofi
+if [[ "$mon" =~ ^[0-9]+$ ]]; then
+    rofi -m $mon "$@"
+else
+    rofi "$@"
+fi
+# 保存rofi执行结果
 roficode=$?
 
-# 重新开启enternotify
-# dwmc switchenternotify 1
+# 重新打开enternotify
+dwmc setenternotify 1
 
+# 返回rofi执行结果
 exit $roficode

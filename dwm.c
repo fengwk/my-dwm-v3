@@ -44,6 +44,7 @@
 #include <X11/Xft/Xft.h>
 #include <sys/time.h>
 #include <math.h>
+#include <libgen.h>
 
 #include "drw.h"
 #include "util.h"
@@ -233,7 +234,6 @@ static void focusstackvis(const Arg *arg); // 仅浏览可见的窗口
 static void focusstackhid(const Arg *arg); // 可以浏览隐藏的窗口
 static void focusstack(int inc, int vis);
 static Atom getatomprop(Client *c, Atom prop);
-static void setgappx(const Arg *arg);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
 static unsigned int getsystraywidth();
@@ -247,6 +247,7 @@ static void incnmaster(const Arg *arg);
 static int inarea(int x, int y, int rx, int ry, int rw, int rh);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
+static int mkdirs(char* dir);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
@@ -276,12 +277,15 @@ static void scan(void);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
 static void setclientstate(Client *c, long state);
+static void setenternotify(const Arg *arg);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
+static void setgappx(const Arg *arg);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
+static void setselmon(Monitor *m);
 static void show(const Arg *arg);
 static void showall(const Arg *arg);
 static void showwin(Client *c);
@@ -330,6 +334,7 @@ static void viewtoright(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
+static void writedwmstatus(const char *name, const char *status);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
@@ -343,6 +348,7 @@ static const char autostopsh[] = "autostop.sh"; // 退出dwm时以非阻塞方�
 static const char broken[] = "broken";
 static const char dwmdir[] = "dwm";
 static const char localshare[] = ".local/share";
+static const char dwmstatusdir[] = ".cache/dwm/status";
 static Systray *systray = NULL;
 static char stext[256];
 static int screen;
@@ -379,6 +385,10 @@ static Window root, wmcheckwin;
 
 static long long beginmousemove = 0; // 开始movemouse的时间戳
 static long long prevmousemove = 0; // 前一次movemouse的时间戳
+
+static long long tagmonms; // 完成tagmontime的事件
+static int enableenternotify = 1; // 是否开启enternotify
+static Monitor *mouseselmon; // 鼠标选中的monitor
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -596,7 +606,7 @@ buttonpress(XEvent *e)
 	/* focus monitor if necessary */
 	if ((m = wintomon(ev->window)) && m != selmon) {
 		unfocus(selmon->sel, 1);
-		selmon = m;
+		setselmon(m);
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
@@ -1111,26 +1121,34 @@ void
 enternotify(XEvent *e)
 {
 	Client *c;
-	// Monitor *m;
 	XCrossingEvent *ev = &e->xcrossing;
 
-	if ((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
+	if (!enableenternotify)
+		return;
+
+	// 抑制在tagmon之后的enternotify
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	long long curms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	if (tagmonms && curms - tagmonms < 50)
+		return;
+
+	// root将在motionnotify中被处理
+	if (ev->window == root)
 		return;
 
 	c = wintoclient(ev->window);
-	if (c && c->mon == selmon) // 仅处理当前monitor的enternotify其余交给motionnotify处理
-		focus(c);
-	// 发现了下面逻辑会导致一些异常的case
-	// 聚焦在monitor A，A中仅有client X，此时tagmon X到另外的monitor B，monitor聚焦会先到B再回到A，这并不符合预期，经过排查是这里的逻辑导致的
-	// 此时c为NULL，m为之前的monitor，导致最终selmon被错误定位，因此尝试将此处的逻辑修改为仅定位到非NULL的client，窗口逻辑交给motionnotify处理
-	// c = wintoclient(ev->window);
-	// m = c ? c->mon : wintomon(ev->window);
-	// if (m != selmon) {
-	// 	unfocus(selmon->sel, 1);
-	// 	selmon = m;
-	// } else if (!c || c == selmon->sel)
-	// 	return;
-	// focus(c);
+	if (c) {
+		if (c->mon == selmon) {
+			focus(c);
+			mouseselmon = c->mon;
+		} else if (c->mon != mouseselmon) {
+			unfocus(selmon->sel, 1);
+			setselmon(c->mon);
+			focus(c);
+			mouseselmon = c->mon;
+		}
+	}
 }
 
 void
@@ -1163,7 +1181,7 @@ focus(Client *c)
 	}
 	if (c) {
 		if (c->mon != selmon)
-			selmon = c->mon;
+			setselmon(c->mon);
 		if (c->isurgent)
 			seturgent(c, 0);
 		detachstack(c);
@@ -1274,15 +1292,6 @@ getatomprop(Client *c, Atom prop)
 		XFree(p);
 	}
 	return atom;
-}
-
-void
-setgappx(const Arg *arg) {
-	if (arg) {
-		gappx = arg->ui;
-		for (Monitor *m = mons; m; m = m->next)
-			arrange(m);
-	}
 }
 
 unsigned int
@@ -1590,6 +1599,22 @@ killclient(const Arg *arg)
 	}
 }
 
+int
+mkdirs(char *dir) {
+	struct stat st;
+	if (stat(dir, &st) == 0 && S_ISDIR(st.st_mode))
+		return 1;
+
+	char *parentdir = strdup(dir);
+	dirname(parentdir);
+	int res = mkdirs(parentdir);
+	free(parentdir);
+	if (!res)
+		return 0;
+
+	return mkdir(dir, 0777) == 0;
+}
+
 void
 manage(Window w, XWindowAttributes *wa)
 {
@@ -1702,13 +1727,16 @@ motionnotify(XEvent *e)
 	Monitor *m;
 	XMotionEvent *ev = &e->xmotion;
 
-	// enternotify由于会在窗口resize时触发，导致tagmon失败，因此取消仅root才响应的限制，将跨窗口的移动逻辑移到motionnotify里，先观察下性能情况，目前打日志看来这里的调用次数应该还可以接受
-	// if (ev->window != root)
-	// 	return;
-	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != selmon) {
-		unfocus(selmon->sel, 1);
-		selmon = m;
-		focus(NULL);
+	if (ev->window != root)
+		return;
+	m = recttomon(ev->x_root, ev->y_root, 1, 1);
+	if (m && m != mouseselmon) {
+		if (m != selmon) {
+			unfocus(selmon->sel, 1);
+			setselmon(m);
+			focus(NULL);
+		}
+		mouseselmon = m;
 	}
 }
 
@@ -1817,7 +1845,7 @@ movemouse(const Arg *arg)
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
 		sendmon(c, m);
-		selmon = m;
+		setselmon(m);
 		focus(NULL);
 	}
 }
@@ -2142,7 +2170,7 @@ resizemouse(const Arg *arg)
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
 		sendmon(c, m);
-		selmon = m;
+		setselmon(m);
 		focus(NULL);
 	}
 }
@@ -2377,6 +2405,11 @@ setclientstate(Client *c, long state)
 		PropModeReplace, (unsigned char *)data, 2);
 }
 
+void
+setenternotify(const Arg *arg) {
+	enableenternotify = arg->i;
+}
+
 int
 sendevent(Window w, Atom proto, int mask, long d0, long d1, long d2, long d3, long d4)
 {
@@ -2451,6 +2484,15 @@ setfullscreen(Client *c, int fullscreen)
 		c->h = c->oldh;
 		resizeclient(c, c->x, c->y, c->w, c->h);
 		arrange(c->mon);
+	}
+}
+
+void
+setgappx(const Arg *arg) {
+	if (arg) {
+		gappx = arg->ui;
+		for (Monitor *m = mons; m; m = m->next)
+			arrange(m);
 	}
 }
 
@@ -2615,6 +2657,16 @@ seturgent(Client *c, int urg)
 }
 
 void
+setselmon(Monitor *m) {
+	if (m != selmon) {
+		selmon = m;
+		char monnum[8];
+		snprintf(monnum, LENGTH(monnum), "%d", selmon->num);
+		writedwmstatus("monitor", monnum);
+	}
+}
+
+void
 show(const Arg *arg)
 {
 	if (selmon->hidsel)
@@ -2722,6 +2774,11 @@ tagmon(const Arg *arg)
 	sendmon(selmon->sel, m);
 	if (windowfollow)
 		switchtomon(m);
+
+	// 记录完成tagmon的时间
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	tagmonms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 void
@@ -3118,7 +3175,7 @@ updategeom(void)
 				attachstack(c);
 			}
 			if (m == selmon)
-				selmon = mons;
+				setselmon(mons);
 			cleanupmon(m);
 		}
 		free(unique);
@@ -3135,8 +3192,8 @@ updategeom(void)
 		}
 	}
 	if (dirty) {
-		selmon = mons;
-		selmon = wintomon(root);
+		setselmon(mons);
+		setselmon(wintomon(root));
 	}
 	return dirty;
 }
@@ -3491,6 +3548,50 @@ wintomon(Window w)
 	return selmon;
 }
 
+void
+writedwmstatus(const char *name, const char *status) {
+	char *path;
+	char *dir;
+	char *home;
+
+	// 获取home
+	if ((home = getenv("HOME")) == NULL)
+		return;
+
+	// 如果不存在目录则构建
+	dir = ecalloc(1, strlen(home) + strlen(dwmstatusdir) + 2);
+	if (dir == NULL)
+		return;
+	if (sprintf(dir, "%s/%s", home, dwmstatusdir) < 0) {
+		free(dir);
+		return;
+	}
+    if (!mkdirs(dir)) {
+		free(dir);
+		return;
+    }
+	free(dir);
+
+	// 打开写入的文件描述符
+	path = ecalloc(1, strlen(home) + strlen(dwmstatusdir) + strlen(name) + 3);
+	if (path == NULL) {
+		return;
+	}
+	if (sprintf(path, "%s/%s/%s", home, dwmstatusdir, name) < 0) {
+		free(path);
+		return;
+	}
+	FILE* file = fopen(path, "w");
+	free(path);
+	if (file == NULL)
+		return;
+
+	// 写入状态
+	fputs(status, file);
+	// 关闭文件描述符
+	fclose(file);
+}
+
 /* There's no way to check accesses to destroyed windows, thus those cases are
  * ignored (especially on UnmapNotify's). Other types of errors call Xlibs
  * default error handler, which may call exit. */
@@ -3545,7 +3646,7 @@ void
 switchtomon(Monitor *m) {
 	if (m && m != selmon) {
 		unfocus(selmon->sel, 0);
-		selmon = m;
+		setselmon(m);
 		focus(NULL);
 	}
 }
@@ -3633,10 +3734,10 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
-  runautosh(autostartblocksh, autostartsh);
+	runautosh(autostartblocksh, autostartsh);
 	run();
 	cleanup();
 	XCloseDisplay(dpy);
-  runautosh(autostopblocksh, autostopsh);
+	runautosh(autostopblocksh, autostopsh);
 	return EXIT_SUCCESS;
 }
