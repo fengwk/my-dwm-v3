@@ -314,10 +314,12 @@ static const Button buttons[] = {
 static Signal signals[] = {
 	/* signum              function */
 	{ "setmfact",          setmfact },
-	{ "incnmaster",        incnmaster },
 	{ "quit",              quit },
 	{ "setgappx",          setgappx },
 	{ "togglesmartgap",    togglesmartgap },
 	{ "showall",           showall },
 	{ "setenternotify",    setenternotify },
+	{ "viewtoleft",        viewtoleft },
+	{ "viewtoright",       viewtoright },
+	{ "setoverview",       setoverview },
 };

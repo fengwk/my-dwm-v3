@@ -283,6 +283,7 @@ static void setfullscreen(Client *c, int fullscreen);
 static void setgappx(const Arg *arg);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
+static void setoverview(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
 static void setselmon(Monitor *m);
@@ -2554,6 +2555,17 @@ setmfact(const Arg *arg)
 		selmon->pertag->mfacts[0] = f;
 	}
 	arrange(selmon);
+}
+
+void
+setoverview(const Arg *arg) {
+	if (arg->ui) {
+		if (!selmon->overview)
+			toggleoverview(arg);
+	} else {
+		if (selmon->overview)
+			toggleoverview(arg);
+	}
 }
 
 void
