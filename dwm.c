@@ -181,6 +181,7 @@ typedef struct {
 	int isfloating;
 	int monitor;
 	int hideborder;
+	int fx, fy;
 } Rule;
 
 typedef struct Systray Systray;
@@ -448,9 +449,19 @@ applyrules(Client *c)
 			c->tags |= r->tags;
 			if (r->hideborder)
 				c->bw = 0;
-			if ((r->tags & SPTAGMASK) && r->isfloating) {
-				c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
-				c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
+			if (r->isfloating) {
+				if (r->fx >= RULE_FXY_NEGOFFSET)
+					c->x = c->mon->wx + c->mon->ww - (r->fx - RULE_FXY_NEGOFFSET);
+				else if (r->fx >= RULE_FXY_POSOFFSET)
+					c->x = c->mon->wx + (r->fx - RULE_FXY_POSOFFSET);
+				else if (r->fx == RULE_FXY_CENTER)
+					c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
+				if (r->fy >= RULE_FXY_NEGOFFSET)
+					c->y = c->mon->wy + c->mon->wh - (r->fy - RULE_FXY_NEGOFFSET);
+				else if (r->fy >= RULE_FXY_POSOFFSET)
+					c->y = c->mon->wy + (r->fy - RULE_FXY_POSOFFSET);
+				else if (r->fy == RULE_FXY_CENTER)
+					c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
 			}
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
