@@ -100,14 +100,17 @@ static const char *taglabels[][2] = {
 };
 
 /* scratchpads */
+#define SP0 "#sp0"
 #define SP1 "#sp1"
 #define SP2 "#sp2"
 #define SP3 "#sp3"
+const char *spcmd0[] = {"dwm-sp0", SP0, NULL };
 const char *spcmd1[] = {"dwm-sp1", SP1, NULL };
 const char *spcmd2[] = {"dwm-sp2", SP2, NULL };
 const char *spcmd3[] = {"dwm-sp3", SP3, NULL };
 static Sp scratchpads[] = {
 	/* name    cmd  */
+	  {SP0,    spcmd0},
 	  {SP1,    spcmd1},
 	  {SP2,    spcmd2},
 	  {SP3,    spcmd3},
@@ -124,9 +127,10 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class                 instance     title         tags mask    isfloating     monitor    hideborder    fx               fy */
-	{ NULL,                  SP1,         NULL,         SPTAG(0),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
-	{ NULL,                  SP2,         NULL,         SPTAG(1),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
-	{ NULL,                  SP3,         NULL,         SPTAG(2),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP0,         NULL,         SPTAG(0),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP1,         NULL,         SPTAG(1),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP2,         NULL,         SPTAG(2),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP3,         NULL,         SPTAG(3),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
  	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "popo",                NULL,        NULL,         0,           1,             -1,        1,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
@@ -255,9 +259,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_a,      spawn,           {.v = flameshotcmd } },    // 截图
 
 	/* scratchpads */
-	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 0 } },
-	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 1 } },
-	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 2 } },
+	{ MODKEY,                       XK_grave,  togglescratch,   {.ui = 0 } },
+	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 1 } },
+	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 2 } },
+	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 3 } },
 
 	/* 鼠标控制 */
 	{ MODKEY|ControlMask,           XK_z,         spawn,           {.v = mouseclick1} },  // 鼠标左键点击
