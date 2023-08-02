@@ -299,23 +299,26 @@ static const Key keys[] = {
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
-	/* click                event mask      button          function        argument */
-	{ ClkTagOV,             0,              Button1,        toggleoverview, {0} },
-	{ ClkTagBar,            0,              Button1,        view,           {0} },
-	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
-	{ ClkTagBar,            0,              Button4,        viewtoleft,     {0} },       // 在tag栏上鼠标上滚切换到上一个tag
-	{ ClkTagBar,            0,              Button5,        viewtoright,    {0} },       // 在tag栏上鼠标上滚切换到下一个tag
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} },
-	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
-	{ ClkWinTitle,          0,              Button4,        focusstackhid,  {.i = -1} }, // 在标题栏上鼠标上滚切换到上一个客户端
-	{ ClkWinTitle,          0,              Button5,        focusstackhid,  {.i = +1} }, // 在标题栏上鼠标上滚切换到下一个客户端
-	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
-	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
-	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
+	/* click                event mask        button          function        argument */
+	{ ClkTagOV,             0,                Button1,        toggleoverview, {0} },
+	{ ClkTagBar,            0,                Button1,        view,           {0} },
+	{ ClkTagBar,            0,                Button3,        toggleview,     {0} },
+	{ ClkTagBar,            0,                Button4,        viewtoleft,     {0} },       // 在tag栏上鼠标上滚切换到上一个tag
+	{ ClkTagBar,            0,                Button5,        viewtoright,    {0} },       // 在tag栏上鼠标上滚切换到下一个tag
+	{ ClkTagBar,            MODKEY,           Button1,        tag,            {0} },
+	{ ClkTagBar,            MODKEY,           Button3,        toggletag,      {0} },
+	{ ClkLtSymbol,          0,                Button1,        setlayout,      {0} },
+	{ ClkWinTitle,          0,                Button1,        togglewin,      {0} },
+	{ ClkWinTitle,          0,                Button2,        zoom,           {0} },
+	{ ClkWinTitle,          0,                Button3,        titlemenu,      {0} },
+	{ ClkWinTitle,          0,                Button4,        focusstackhid,  {.i = -1} }, // 在标题栏上鼠标上滚切换到上一个客户端
+	{ ClkWinTitle,          0,                Button5,        focusstackhid,  {.i = +1} }, // 在标题栏上鼠标上滚切换到下一个客户端
+	{ ClkStatusText,        0,                Button2,        spawn,          {.v = termcmd } },
+	{ ClkClientWin,         MODKEY,           Button1,        movemouse,      {0} },
+	{ ClkClientWin,         MODKEY,           Button2,        togglefloating, {0} },
+	{ ClkClientWin,         MODKEY,           Button3,        resizemouse,    {0} },
+	{ ClkClientWin,         MODKEY|ShiftMask, Button3,        rootmenu,       {0} },
+	{ ClkRootWin,           0,                Button3,        rootmenu,       {0} },
 };
 
 /* signal definitions */
@@ -332,4 +335,6 @@ static Signal signals[] = {
 	{ "viewtoleft",        viewtoleft },
 	{ "viewtoright",       viewtoright },
 	{ "setoverview",       setoverview },
+	{ "togglefullscrwin",  togglefullscrwin },
+	{ "killclientwin",     killclientwin },
 };

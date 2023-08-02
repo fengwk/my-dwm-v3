@@ -97,6 +97,7 @@ enum { SWITCH_WIN,  SWITCH_SAME_TAG,  SWITCH_DIFF_TAG }; /* switch mode */
 typedef union {
 	int i;
 	unsigned int ui;
+	unsigned long ul;
 	float f;
 	const void *v;
 } Arg;
@@ -248,6 +249,8 @@ static void incnmaster(const Arg *arg);
 static int inarea(int x, int y, int rx, int ry, int rw, int rh);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
+static void killclientwin(const Arg *arg);
+static void killclient0(Client *c);
 static int mkdirs(char* dir);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
@@ -274,6 +277,7 @@ static void resizewin(const Arg *arg);
 static void removeaccstack(Client *c);
 static void run(void);
 static void runautosh(const char autoblocksh[], const char autosh[]);
+static void rootmenu(const Arg *arg);
 static void scan(void);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
@@ -302,12 +306,14 @@ static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void temporarilyShow(Client *c);
 static void tile(Monitor *m);
+static void titlemenu(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglehide(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglefloating0(int x, int y, int w, int h);
 static void togglefloatingacenter(const Arg *arg);
 static void togglefullscr(const Arg *arg);
+static void togglefullscrwin(const Arg *arg);
 static void toggleoverview(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -1576,6 +1582,8 @@ fake_signal(void)
 				sscanf(fsignal + len_indicator + n, "%i", &(arg.i));
 			else if (strncmp(param, "ui", n - len_str_sig) == 0)
 				sscanf(fsignal + len_indicator + n, "%u", &(arg.ui));
+			else if (strncmp(param, "ul", n - len_str_sig) == 0)
+				sscanf(fsignal + len_indicator + n, "%lu", &(arg.ul));
 			else if (strncmp(param, "f", n - len_str_sig) == 0)
 				sscanf(fsignal + len_indicator + n, "%f", &(arg.f));
 			else return 1;
@@ -1597,14 +1605,27 @@ fake_signal(void)
 void
 killclient(const Arg *arg)
 {
-	if (!selmon->sel)
+	killclient0(selmon->sel);
+}
+
+void
+killclientwin(const Arg *arg) {
+	if (arg) {
+		Client *c = wintoclient(arg->ul);
+		killclient0(c);
+	}
+}
+
+void
+killclient0(Client *c) {
+	if (!c)
 		return;
 
-	if (!sendevent(selmon->sel->win, wmatom[WMDelete], NoEventMask, wmatom[WMDelete], CurrentTime, 0 , 0, 0)) {
+	if (!sendevent(c->win, wmatom[WMDelete], NoEventMask, wmatom[WMDelete], CurrentTime, 0 , 0, 0)) {
 		XGrabServer(dpy);
 		XSetErrorHandler(xerrordummy);
 		XSetCloseDownMode(dpy, DestroyAll);
-		XKillClient(dpy, selmon->sel->win);
+		XKillClient(dpy, c->win);
 		XSync(dpy, False);
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
@@ -2366,6 +2387,13 @@ runautosh(const char autoblocksh[], const char autosh[])
 }
 
 void
+rootmenu(const Arg *arg) {
+	const char *cmd[] = { "dwm-rootmenu", NULL };
+	Arg a = {.v = cmd};
+	spawn(&a);
+}
+
+void
 scan(void)
 {
 	unsigned int i, num;
@@ -2848,6 +2876,21 @@ tile(Monitor *m)
 }
 
 void
+titlemenu(const Arg *arg) {
+	if (!arg || !arg->v) {
+		return;
+	}
+
+	char winid[32];
+	Client *c = (Client*)arg->v;
+	sprintf(winid, "%lu", c->win);
+
+	const char *cmd[] = { "dwm-titlemenu", winid, NULL };
+	Arg a = {.v = cmd};
+	spawn(&a);
+}
+
+void
 togglebar(const Arg *arg)
 {
 	selmon->showbar = !selmon->showbar;
@@ -2918,6 +2961,17 @@ togglefullscr(const Arg *arg)
 {
   if(selmon->sel)
     setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
+}
+
+void
+togglefullscrwin(const Arg *arg) {
+	if (arg) {
+		Client *c = wintoclient(arg->ul);
+		if (c) {
+			setfullscreen(c, !c->isfullscreen);
+			focus(c);
+		}
+	}
 }
 
 void

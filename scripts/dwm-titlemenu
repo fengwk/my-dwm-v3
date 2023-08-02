@@ -1,0 +1,22 @@
+#!/bin/bash
+
+winid=$1
+
+togglefullscrwin=' 󰊓 Toggle Fullscreen'
+killclientwin=' 󰅗 Kill Client'
+
+selection=$(
+cat << EOF | xmenu
+$togglefullscrwin
+$killclientwin
+EOF
+)
+
+case $selection in
+    $togglefullscrwin)
+        dwmc togglefullscrwin $winid
+        ;;
+    $killclientwin)
+        dwmc killclientwin $winid
+        ;;
+esac

@@ -1,0 +1,113 @@
+#!/bin/bash
+
+newterminal='  New Terminal'
+newbrowser=' 󰊯 New Browser'
+idea='  IDEA'
+popo=' 﫢 POPO'
+work=' 󰬱 Work'
+xiaoyi=' 嬨 XiaoYi'
+monitor1=' 󰍹 Monitor1'
+monitor2=' 󰍺 Monitor2'
+gapsmall=' 󰢤 Gap Small'
+gapmiddle=' 󰢤 Gap Middle'
+gaplarge=' 󰢤 Gap Large'
+flameshot='  Flameshot'
+flameshotocr='  Flameshot OCR'
+togglesmartgap=' 󰃈 Toggle Smart Gap '
+lockscreen='  Lock Screen'
+clearcache=' 󰃨 Clear Cache'
+showall='  Show All'
+quitdwm=' 󰿅 Quit DWM'
+reboot='  Reboot'
+shutdown='  Shutdown Now'
+
+selection=$(
+cat << EOF | xmenu
+$newterminal
+$newbrowser
+$idea
+$popo
+$work
+$xiaoyi
+$monitor1
+$monitor2
+$gapsmall
+$gapmiddle
+$gaplarge
+$flameshot
+$flameshotocr
+$togglesmartgap
+$lockscreen
+$clearcache
+$showall
+$quitdwm
+$reboot
+$shutdown
+EOF
+)
+
+case $selection in
+    $newterminal)
+        dwm-termcmd
+        ;;
+    $newbrowser)
+        google-chrome-stable
+        ;;
+    $idea)
+        intellij-idea-ultimate-edition
+        ;;
+    $popo)
+        popo
+        ;;
+    $work)
+        st bash -c 'cd /home/fengwk/Documents/work && nvim'
+        ;;
+    $xiaoyi)
+        xiaoyi
+        ;;
+    $newterminal)
+        dwm-termcmd
+        ;;
+    "$monitor1")
+        dwm-switchmonitor 1
+        ;;
+    $monitor2)
+        dwm-switchmonitor 2
+        ;;
+    $gapsmall)
+        dwmc setgappx 10
+        ;;
+    $gapmiddle)
+        dwmc setgappx 20
+        ;;
+    $gaplarge)
+        dwmc setgappx 40
+        ;;
+    $flameshot)
+        dwm-flameshot gui
+        ;;
+    $flameshotocr)
+        dwm-flameshotocr
+        ;;
+    $togglesmartgap)
+        dwmc togglesmartgap
+        ;;
+    $lockscreen)
+        slock
+        ;;
+    $clearcache)
+        clear-cache.sh
+        ;;
+    $showall)
+        dwmc showall
+        ;;
+    $quitdwm)
+        dwmc quit
+        ;;
+    $reboot)
+        reboot
+        ;;
+    $shutdown)
+        shutdown now
+        ;;
+esac
