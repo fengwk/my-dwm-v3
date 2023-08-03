@@ -3,6 +3,6 @@
 # feh --recursive --randomize --bg-fill --no-fehbg ~/Pictures/wallpapers
 
 # 使用新的方式随即选取图片可以使得多个显示器上显示相同的背景图
-picdir='/home/fengwk/Pictures/wallpapers/'
+picdir=~/Pictures/wallpapers/
 pic=$(ls $picdir | tr ' ' '\n' | shuf | head -1)
 feh --bg-fill --no-fehbg $picdir$pic

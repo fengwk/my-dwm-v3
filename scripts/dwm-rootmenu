@@ -11,6 +11,7 @@ monitor2=' 󰍺 Monitor2'
 gapsmall=' 󰢤 Gap Small'
 gapmiddle=' 󰢤 Gap Middle'
 gaplarge=' 󰢤 Gap Large'
+changewallpaper=' 󰸉 Change Wallpaper'
 flameshot='  Flameshot'
 flameshotocr='  Flameshot OCR'
 togglesmartgap=' 󰃈 Toggle Smart Gap '
@@ -34,6 +35,7 @@ $monitor2
 $gapsmall
 $gapmiddle
 $gaplarge
+$changewallpaper
 $flameshot
 $flameshotocr
 $togglesmartgap
@@ -82,6 +84,9 @@ case $selection in
         ;;
     $gaplarge)
         dwmc setgappx 40
+        ;;
+    $changewallpaper)
+        dwm-changewallpaper
         ;;
     $flameshot)
         dwm-flameshot gui

@@ -14,7 +14,7 @@ auto() {
   mon1=$(xrandr | grep -w connected | grep -P -w -o "$hdmi1|$dp1|$dp2")
   if [ -z "$mon1" ]; then
     xrandr --output $hdmi1 --off --output $dp1 --off --output $dp2 --off --output $edp1 --auto
-    wp-default.sh
+    dwm-defaultwallpaper
   else
     if [ $1 -eq 1 ]; then
       xrandr --output $mon1 --auto --output $edp1 --off
@@ -28,7 +28,7 @@ auto() {
     else
       xrandr --output $mon1 --scale 1x1
     fi
-    wp-default.sh
+    dwm-defaultwallpaper
   fi
 }
 

@@ -48,6 +48,7 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-termcmd $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-switchmonitor $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-changewallpaper $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-defaultwallpaper $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshot $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshotocr $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp0 $(DESTDIR)$(PREFIX)/bin
@@ -65,6 +66,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-termcmd
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-switchmonitor
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-changewallpaper
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-defaultwallpaper
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshot
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshotocr
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp0
