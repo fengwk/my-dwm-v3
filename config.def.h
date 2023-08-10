@@ -56,7 +56,7 @@ static const char *taglabels[][2] = {
   { "com-xk72-charles-gui-MainWithClassLoader", "" },
   { "popo", "﫢" },
   { "wechat.exe", "" },
-  { "Postman", "" },
+  { "Postman", "󰰚" },
   { "XMind", "" },
   { "Xmind", "" },
   { "Java", "" },
