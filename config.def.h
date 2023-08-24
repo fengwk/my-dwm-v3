@@ -52,6 +52,10 @@ static const char *taglabels[][2] = {
   { "Microsoft-edge", "󰇩" },
   { "jetbrains-idea", "" },
   { "jetbrains-idea-ce", "" },
+  { "jetbrains-studio", "" },
+  { "Genymotion", "󰀲" },
+  { "Genymotion Player", "󰀲" },
+  { "anbox", "󰀲" },
   { "code-oss", "" },
   { "com-xk72-charles-gui-MainWithClassLoader", "" },
   { "popo", "﫢" },
@@ -275,7 +279,7 @@ static const Key keys[] = {
 	{ MODKEY|ControlMask,           XK_h,         mousemove,       {.ui = MOUSE_LEFT} },  // 向左移动鼠标光标
 
 	/* 窗口控制 */
-	{ Mod4Mask,                     XK_h,         togglehide,      {0} },                  // 窗口隐藏开关
+	{ Mod4Mask,                     XK_c,         togglehide,      {0} },                  // 窗口隐藏开关
 	{ Mod4Mask,                     XK_f,         togglefloatingacenter,  {0} },           // 窗口浮动开关
 	{ Mod4Mask|ControlMask,         XK_Up,        movewin,         {.ui = WIN_UP} },       // 向上移动窗口
 	{ Mod4Mask|ControlMask,         XK_Down,      movewin,         {.ui = WIN_DOWN} },     // 向下移动窗口

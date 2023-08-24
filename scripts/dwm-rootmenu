@@ -59,7 +59,7 @@ case $selection in
         intellij-idea-ultimate-edition
         ;;
     $popo)
-        popo
+        /opt/apps/popo/files/Elevator.sh
         ;;
     $work)
         st bash -c 'cd /home/fengwk/Documents/work && nvim'
