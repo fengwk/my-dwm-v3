@@ -312,11 +312,11 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,           Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,           Button3,        toggletag,      {0} },
 	{ ClkLtSymbol,          0,                Button1,        setlayout,      {0} },
-	{ ClkWinTitle,          0,                Button1,        togglewin,      {0} },
+	{ ClkWinTitle,          0,                Button1,        focuswin,       {0} },
 	{ ClkWinTitle,          0,                Button2,        zoom,           {0} },
 	{ ClkWinTitle,          0,                Button3,        titlemenu,      {0} },
-	{ ClkWinTitle,          0,                Button4,        focusstackhid,  {.i = -1} }, // 在标题栏上鼠标上滚切换到上一个客户端
-	{ ClkWinTitle,          0,                Button5,        focusstackhid,  {.i = +1} }, // 在标题栏上鼠标上滚切换到下一个客户端
+	{ ClkWinTitle,          0,                Button4,        focusstackvis,  {.i = -1} }, // 在标题栏上鼠标上滚切换到上一个客户端
+	{ ClkWinTitle,          0,                Button5,        focusstackvis,  {.i = +1} }, // 在标题栏上鼠标上滚切换到下一个客户端
 	{ ClkStatusText,        0,                Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,           Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,           Button2,        togglefloating, {0} },
@@ -341,4 +341,5 @@ static Signal signals[] = {
 	{ "setoverview",       setoverview },
 	{ "togglefullscrwin",  togglefullscrwin },
 	{ "killclientwin",     killclientwin },
+	{ "togglehide",        togglehide },
 };

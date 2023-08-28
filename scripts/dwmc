@@ -21,7 +21,7 @@ case $# in
 	setgappx | setoverview)
 		signal $1 ui $2
 		;;
-	togglefullscrwin | killclientwin)
+	togglefullscrwin | killclientwin | togglehide)
 		signal $1 ul $2
         ;;
 	setenternotify)

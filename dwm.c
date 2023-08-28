@@ -125,6 +125,7 @@ struct Client {
 	Client *snext;
 	Monitor *mon;
 	Window win;
+	int hid;
 };
 
 typedef struct {
@@ -162,7 +163,6 @@ struct Monitor {
 	unsigned int tagset[2];
 	int showbar;
 	int topbar;
-	int hidsel;
 	Client *clients;
 	Client *sel;
 	Client *stack;
@@ -230,6 +230,7 @@ static void drawbars(void);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void focus(Client *c);
+static void focuswin(const Arg *arg);
 static void focusin(XEvent *e);
 static void focusmon(const Arg *arg);
 static void focusstackvis(const Arg *arg); // 仅浏览可见的窗口
@@ -243,7 +244,6 @@ static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
 static void grid(Monitor *m);
-static void hide(const Arg *arg);
 static void hidewin(Client *c);
 static void incnmaster(const Arg *arg);
 static int inarea(int x, int y, int rx, int ry, int rw, int rh);
@@ -292,7 +292,6 @@ static void setoverview(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
 static void setselmon(Monitor *m);
-static void show(const Arg *arg);
 static void showall(const Arg *arg);
 static void showwin(Client *c);
 static void showhide(Client *c);
@@ -318,8 +317,6 @@ static void toggleoverview(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
-static void togglewin(const Arg *arg);
-static void togglewinhide(const Arg *arg);
 static void togglesmartgap(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
@@ -1191,11 +1188,9 @@ focus(Client *c)
 	if (selmon->sel && selmon->sel != c) {
 		unfocus(selmon->sel, 0);
 
-		if (selmon->hidsel) {
+		if (selmon->sel->hid && !HIDDEN(selmon->sel)) {
 			hidewin(selmon->sel);
-			if (c)
-				arrange(c->mon);
-			selmon->hidsel = 0;
+			arrange(selmon->sel->mon);
 		}
 	}
 	if (c) {
@@ -1206,6 +1201,7 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
+		temporarilyShow(c);
 		/* Avoid flickering when another client appears and the border
 		 * is restored */
 		if (!solitary(c)) {
@@ -1219,6 +1215,15 @@ focus(Client *c)
 	selmon->sel = c;
 	drawbars();
 	addaccstack(c);
+}
+
+void focuswin(const Arg *arg) {
+	Client *c = (Client*)arg->v;
+
+	if (c != selmon->sel) {
+		focus(c);
+		restack(selmon);
+	}
 }
 
 /* there are some broken focus acquiring clients needing extra handling */
@@ -1238,8 +1243,13 @@ focusmon(const Arg *arg)
 
 	if (!mons->next)
 		return;
+	Client *oldc = selmon->sel;
 	m = dirtomon(arg->i);
 	switchtomon(m);
+	if (oldc && oldc->hid && !HIDDEN(oldc) && (!selmon->sel || selmon->sel != oldc)) {
+		hidewin(oldc);
+		arrange(oldc->mon);
+	}
 }
 
 void
@@ -1252,6 +1262,7 @@ focusstackhid(const Arg *arg) {
 	focusstack(arg->i, 1);
 }
 
+// hid可以理解为是否要展示hidden的client，1-是，0-否
 void
 focusstack(int inc, int hid)
 {
@@ -1285,7 +1296,6 @@ focusstack(int inc, int hid)
 	if (c) {
 		focus(c);
 		restack(selmon);
-		temporarilyShow(c);
 	}
 }
 
@@ -1480,14 +1490,6 @@ grid(Monitor *m) {
 }
 
 void
-hide(const Arg *arg)
-{
-	hidewin(selmon->sel);
-	focus(NULL);
-	arrange(selmon);
-}
-
-void
 hidewin(Client *c) {
 	if (!c || HIDDEN(c))
 		return;
@@ -1611,7 +1613,7 @@ killclient(const Arg *arg)
 
 void
 killclientwin(const Arg *arg) {
-	if (arg) {
+	if (arg && arg->ul) {
 		Client *c = wintoclient(arg->ul);
 		killclient0(c);
 	}
@@ -1665,6 +1667,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
 	c->bw = borderpx;
+	c->hid = 0;
 
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -2719,21 +2722,14 @@ setselmon(Monitor *m) {
 }
 
 void
-show(const Arg *arg)
-{
-	if (selmon->hidsel)
-		selmon->hidsel = 0;
-	showwin(selmon->sel);
-}
-
-void
 showall(const Arg *arg)
 {
 	Client *c = NULL;
-	selmon->hidsel = 0;
 	for (c = selmon->clients; c; c = c->next) {
-		if (ISVISIBLE(c))
+		if (ISVISIBLE(c)) {
+			c->hid = 0;
 			showwin(c);
+		}
 	}
 	if (!selmon->sel) {
 		for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
@@ -2837,7 +2833,6 @@ void
 temporarilyShow(Client *c) {
 	if (c && HIDDEN(c)) {
 		showwin(c);
-		c->mon->hidsel = 1;
 	}
 }
 
@@ -2920,10 +2915,24 @@ togglebar(const Arg *arg)
 
 void
 togglehide(const Arg *arg) {
-	if (selmon->sel && selmon->hidsel) {
-		show(arg);
+	Client *c;
+	if (arg && arg->ul) {
+		c = wintoclient(arg->ul);
 	} else {
-		hide(arg);
+		c = selmon -> sel;
+	}
+
+	if (c) {
+		if (c->hid) {
+			c->hid = 0;
+			showwin(c);
+			focus(c);
+		} else {
+			c->hid = 1;
+			hidewin(c);
+			focus(NULL);
+			arrange(c->mon);
+		}
 	}
 }
 
@@ -3065,40 +3074,6 @@ togglesmartgap(const Arg *arg) {
 	smartgap = smartgap ^ 1;
 	for (Monitor *m = mons; m; m = m->next)
 		arrange(m);
-}
-
-void
-togglewin(const Arg *arg)
-{
-	Client *c = (Client*)arg->v;
-
-	if (c == selmon->sel) {
-		hidewin(c);
-		focus(NULL);
-		arrange(c->mon);
-	} else {
-		if (HIDDEN(c))
-			showwin(c);
-		focus(c);
-		restack(selmon);
-	}
-}
-
-void
-togglewinhide(const Arg *arg)
-{
-	Client *c = (Client*)arg->v;
-
-	if (c == selmon->sel) {
-		hidewin(c);
-		focus(NULL);
-		arrange(c->mon);
-	} else {
-		if (HIDDEN(c))
-			showwin(c);
-		focus(c);
-		restack(selmon);
-	}
 }
 
 void
@@ -3562,29 +3537,22 @@ view(const Arg *arg)
 	arrange(selmon);
 }
 
-void viewto(unsigned int movebit(unsigned int)) {
-  Monitor *mon = selmon;
-  unsigned int seltags = mon->tagset[mon->seltags] & TAGMASK;
-  // 如果当前不只有一个选中tag则不进行处理
-  if (__builtin_popcount(seltags) != 1) {
-    return;
-  }
-
-  unsigned int nextSeltags = movebit(seltags) & TAGMASK;
-  while (nextSeltags) {
+int viewto(int t, unsigned int movebit(unsigned int)) {
+  while (t) {
     int hasVisiable = 0;
-    for (Client *c = mon->clients; c; c = c->next) {
-      if (c->tags & nextSeltags) {
+    for (Client *c = selmon->clients; c; c = c->next) {
+      if (c->tags & t) {
         hasVisiable = 1;
         break;
       }
     }
     if (hasVisiable) {
-      view(&(Arg) { .ui = nextSeltags });
-      break;
+      view(&(Arg) { .ui = t });
+	  return 1;
     }
-    nextSeltags = movebit(nextSeltags) & TAGMASK;
+    t = movebit(t) & TAGMASK;
   }
+  return 0;
 }
 
 unsigned int tagmoveleft(unsigned int tag) {
@@ -3592,7 +3560,16 @@ unsigned int tagmoveleft(unsigned int tag) {
 }
 
 void viewtoleft(const Arg *arg) {
-  viewto(tagmoveleft);
+	int seltag = selmon->tagset[selmon->seltags] & TAGMASK;
+	if (__builtin_popcount(seltag) != 1) {
+		return;
+	}
+	int t = tagmoveleft(seltag) & TAGMASK;
+	if (!viewto(t, tagmoveleft)) {
+		int r = 1 << (LENGTH(tags) - 1);
+		if (seltag != r)
+			viewto(r, tagmoveleft);
+	}
 }
 
 unsigned int tagmoveright(unsigned int tag) {
@@ -3600,7 +3577,14 @@ unsigned int tagmoveright(unsigned int tag) {
 }
 
 void viewtoright(const Arg *arg) {
-  viewto(tagmoveright);
+	int seltag = selmon->tagset[selmon->seltags] & TAGMASK;
+	if (__builtin_popcount(seltag) != 1) {
+		return;
+	}
+	int t = tagmoveright(seltag) & TAGMASK;
+	if (!viewto(t, tagmoveright))
+		if (seltag != 1)
+			viewto(1, tagmoveright);
 }
 
 Client *
@@ -3733,7 +3717,6 @@ switchtoclient(Client *c) {
 	if (selmon->sel != c) {
 		focus(c);
 		restack(selmon);
-		temporarilyShow(c);
 	}
 }
 

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# 依赖zbar
+dwm-flameshot gui --raw | zbarimg -q - | sed 's/QR-Code://' | tr -d '\n' | xclip -selection clipboard

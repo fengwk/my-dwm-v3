@@ -14,6 +14,7 @@ gaplarge=' 󰢤 Gap Large'
 changewallpaper=' 󰸉 Change Wallpaper'
 flameshot='  Flameshot'
 flameshotocr='  Flameshot OCR'
+flameshotqr='  Flameshot QR'
 togglesmartgap=' 󰃈 Toggle Smart Gap '
 lockscreen='  Lock Screen'
 clearcache=' 󰃨 Clear Cache'
@@ -38,6 +39,7 @@ $gaplarge
 $changewallpaper
 $flameshot
 $flameshotocr
+$flameshotqr
 $togglesmartgap
 $lockscreen
 $clearcache
@@ -93,6 +95,9 @@ case $selection in
         ;;
     $flameshotocr)
         dwm-flameshotocr
+        ;;
+    $flameshotqr)
+        dwm-flameshotqr
         ;;
     $togglesmartgap)
         dwmc togglesmartgap

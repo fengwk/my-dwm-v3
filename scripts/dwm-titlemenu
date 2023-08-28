@@ -2,17 +2,22 @@
 
 winid=$1
 
+togglehide='  Toggle Hide'
 togglefullscrwin=' 󰊓 Toggle Fullscreen'
 killclientwin=' 󰅗 Kill Client'
 
 selection=$(
 cat << EOF | xmenu
+$togglehide
 $togglefullscrwin
 $killclientwin
 EOF
 )
 
 case $selection in
+    $togglehide)
+        dwmc togglehide $winid
+        ;;
     $togglefullscrwin)
         dwmc togglefullscrwin $winid
         ;;

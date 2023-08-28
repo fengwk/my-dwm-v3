@@ -51,6 +51,7 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-defaultwallpaper $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshot $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-flameshotocr $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-flameshotqr $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp0 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp1 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp2 $(DESTDIR)$(PREFIX)/bin
@@ -69,6 +70,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-defaultwallpaper
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshot
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshotocr
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-flameshotqr
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp0
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp1
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp2
