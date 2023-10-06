@@ -337,6 +337,7 @@ static void updatewmhints(Client *c);
 static void view(const Arg *arg);
 static void viewtoleft(const Arg *arg);
 static void viewtoright(const Arg *arg);
+static int wildcardmatch(const char *str, const char *pattern);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
@@ -1046,7 +1047,7 @@ drawbar(Monitor *m)
 				XGetClassHint(dpy, c->win, &ch);
 				const char *s = ch.res_class ? ch.res_class : "󰄱";
 				for (int j = 0; j < LENGTH(taglabels); j++) {
-					if (strcmp(taglabels[j][0], s) == 0) {
+					if (wildcardmatch(taglabels[j][0], s)) {
 						s = taglabels[j][1];
 						break;
 					}
@@ -3585,6 +3586,52 @@ void viewtoright(const Arg *arg) {
 	if (!viewto(t, tagmoveright))
 		if (seltag != 1)
 			viewto(1, tagmoveright);
+}
+
+int
+wildcardmatch(const char *pattern, const char *str)
+{
+	int slen = strlen(str);
+	int plen = strlen(pattern);
+
+	// dp[i][j]表示pattern的前i个字符和str的前j个字符是否能够满足通配符匹配
+	int** dp = calloc(plen+1, sizeof(int*));
+	for (int i = 0; i <= plen; i++) {
+		dp[i] = calloc(slen+1, sizeof(int));
+	}
+	dp[0][0] = 1;
+
+	// 计算dp
+	for (int i = 1; i <= plen; i++) {
+		for (int j = 1; j <= slen; j++) {
+			if (pattern[i-1] == '*') {
+				// 对于*通配的情况，可能有3种情况：
+				// 如果dp[i-1][j-1]匹配，那么pattern和str分别多了一个字符，且pattern多的是*，因此dp[i][j]匹配
+				// 如果dp[i-1][j]匹配，那么在pattern多了一个*之后可以选择这个*不进行匹配，因此dp[i][j]匹配
+				// 如果dp[i][j-1]匹配，那么在str多了一个字符后仍可以用*去匹配，因此dp[i][j]匹配
+				dp[i][j] = dp[i-1][j-1] || dp[i-1][j] || dp[i][j-1] ? 1 : 0;
+			} else if (pattern[i-1] == '?' || pattern[i-1] == str[j-1]) {
+				// 如果dp[i-1][j-1]匹配，那么pattern和str分别多了一个字符，且该字符可以匹配时，dp[i][j]匹配
+				// 如果dp[i-1][j]匹配，那么在pattern多了一个字符后dp[i][j]无法匹配
+				// 如果dp[i][j-1]匹配，那么在str多了一个字符后dp[i][j]无法匹配
+				dp[i][j] = dp[i-1][j-1] ? 1 : 0;
+			} else {
+				dp[i][j] = 0;
+			}
+		}
+	}
+
+	// 获取匹配结果
+	int res = dp[plen][slen];
+
+	// 释放dp
+	for (int i = 0; i <= plen; i++) {
+		free(dp[i]);
+	}
+	free(dp);
+
+	// 返回匹配结果
+	return res;
 }
 
 Client *

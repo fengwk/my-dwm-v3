@@ -101,9 +101,7 @@ static const char *taglabels[][2] = {
   { "Clash for Windows", "" },
   { "draw.io", "" },
   { "feh", "" },
-  { "Gimp-2.10", "󰽉" },
-  { "Gimp-2.99", "󰽉" },
-  { "Gimp", "󰽉" },
+  { "Gimp*", "󰽉" },
 };
 
 /* scratchpads */
@@ -111,10 +109,10 @@ static const char *taglabels[][2] = {
 #define SP1 "#sp1"
 #define SP2 "#sp2"
 #define SP3 "#sp3"
-const char *spcmd0[] = {"dwm-sp0", SP0, NULL };
-const char *spcmd1[] = {"dwm-sp1", SP1, NULL };
-const char *spcmd2[] = {"dwm-sp2", SP2, NULL };
-const char *spcmd3[] = {"dwm-sp3", SP3, NULL };
+const char *spcmd0[] = { "dwm-sp0", SP0, NULL };
+const char *spcmd1[] = { "dwm-sp1", SP1, NULL };
+const char *spcmd2[] = { "dwm-sp2", SP2, NULL };
+const char *spcmd3[] = { "dwm-sp3", SP3, NULL };
 static Sp scratchpads[] = {
 	/* name    cmd  */
 	  {SP0,    spcmd0},
