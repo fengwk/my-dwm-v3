@@ -1,0 +1,9 @@
+#!/bin/bash
+
+id=$(xinput list | grep Touchpad | awk -F 'id=' '{print $2}' | awk '{print $1}')
+st=$(xinput list-props $id | sed -n '2p' | awk '{print $4}')
+if [[ $st == 0 ]]; then
+  xinput enable $id
+else
+  xinput disable $id
+fi

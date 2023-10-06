@@ -2,26 +2,26 @@
 
 winid=$1
 
-togglehide='  Toggle Hide'
-togglefullscrwin=' 󰊓 Toggle Fullscreen'
 killclientwin=' 󰅗 Kill Client'
+togglefullscrwin=' 󰊓 Toggle Fullscreen'
+togglehide='  Toggle Hide'
 
 selection=$(
 cat << EOF | xmenu
-$togglehide
-$togglefullscrwin
 $killclientwin
+$togglefullscrwin
+$togglehide
 EOF
 )
 
 case $selection in
-    $togglehide)
-        dwmc togglehide $winid
+    $killclientwin)
+        dwmc killclientwin $winid
         ;;
     $togglefullscrwin)
         dwmc togglefullscrwin $winid
         ;;
-    $killclientwin)
-        dwmc killclientwin $winid
+    $togglehide)
+        dwmc togglehide $winid
         ;;
 esac

@@ -101,6 +101,9 @@ static const char *taglabels[][2] = {
   { "Clash for Windows", "" },
   { "draw.io", "" },
   { "feh", "" },
+  { "Gimp-2.10", "󰽉" },
+  { "Gimp-2.99", "󰽉" },
+  { "Gimp", "󰽉" },
 };
 
 /* scratchpads */
@@ -142,10 +145,10 @@ static const Rule rules[] = {
  	{ "feh",                 NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "XMind",               NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "xiaoyi_assistant",    NULL,        NULL,         1<<8,        0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ NULL,                  "MusicVPN",  NULL,         1<<8,        0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "jetbrains-idea",      NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "Alacritty",           NULL,        "#todolist",  0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
  	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
 };
@@ -323,6 +326,8 @@ static const Button buttons[] = {
 	{ ClkClientWin,         MODKEY,           Button3,        resizemouse,    {0} },
 	{ ClkClientWin,         MODKEY|ShiftMask, Button3,        rootmenu,       {0} },
 	{ ClkRootWin,           0,                Button3,        rootmenu,       {0} },
+	{ ClkRootWin,           0,                Button4,        viewtoleft,     {0} },
+	{ ClkRootWin,           0,                Button5,        viewtoright,    {0} },
 };
 
 /* signal definitions */

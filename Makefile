@@ -59,6 +59,9 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-rofi $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-titlemenu $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-rootmenu $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-toggletouchpad $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-clearcache $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-pickcolor $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
@@ -78,5 +81,8 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofi
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-titlemenu
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rootmenu
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-toggletouchpad
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-clearcache
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-pickcolor
 
 .PHONY: all options clean dist install uninstall
