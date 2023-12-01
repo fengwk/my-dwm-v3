@@ -2010,7 +2010,7 @@ void
 pop(Client *c)
 {
 	detach(c);
-	attachbylayout(c);
+	attach(c);
 	focus(c);
 	arrange(c->mon);
 }
