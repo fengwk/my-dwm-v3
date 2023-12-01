@@ -100,8 +100,13 @@ static const char *taglabels[][2] = {
   { "Tor Browser", "" },
   { "Clash for Windows", "" },
   { "draw.io", "" },
+  { "Drawio", "" },
   { "feh", "" },
   { "Gimp*", "󰽉" },
+  { "Plasticity", "" },
+  { "com.xunlei.download", "" },
+  { "FreeCAD", "󰻬" },
+  { "Creality Print", "" },
 };
 
 /* scratchpads */
@@ -148,6 +153,7 @@ static const Rule rules[] = {
  	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
+ 	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,       RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
 };
 
@@ -345,4 +351,5 @@ static Signal signals[] = {
 	{ "togglefullscrwin",  togglefullscrwin },
 	{ "killclientwin",     killclientwin },
 	{ "togglehide",        togglehide },
+	{ "focusstackvis",     focusstackvis },
 };
