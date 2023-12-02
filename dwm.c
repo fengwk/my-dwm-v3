@@ -217,6 +217,7 @@ static void checkotherwm(void);
 static void cleanup(void);
 static void cleanupmon(Monitor *mon);
 static void clientmessage(XEvent *e);
+static void computecenter(int *x, int *y, int *w, int *h);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
@@ -816,6 +817,18 @@ clientmessage(XEvent *e)
 			seturgent(c, 1);
 		switchtoclient(c);
 	}
+}
+
+void
+computecenter(int *x, int *y, int *w, int *h) {
+	if (*w <= 0) {
+		*w = (selmon->ww) * 0.7;
+	}
+	if (*h <= 0) {
+		*h = (selmon->wh) * 0.7;
+	}
+	*x = selmon->wx + (selmon->ww - *w) / 2;
+	*y = selmon->wy + (selmon->wh - *h) / 2;
 }
 
 void
@@ -1670,6 +1683,11 @@ manage(Window w, XWindowAttributes *wa)
 	c->bw = borderpx;
 	c->hid = 0;
 
+	// 浮动布局居中
+	if (selmon->lt[selmon->sellt] && !selmon->lt[selmon->sellt]->arrange) {
+		computecenter(&c->x, &c->y, &c->w, &c->h);
+	}
+
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
 		c->mon = t->mon;
@@ -1780,7 +1798,7 @@ motionnotify(XEvent *e)
 
 void
 mousefocus(const Arg *arg) {
-  if (selmon && selmon->sel) {
+  if (selmon->sel) {
     Client *c = selmon->sel;
     XWarpPointer(dpy, None, root, 0, 0, 0, 0, c->x + c->w / 2, c->y + c->h / 2);
   }
@@ -2959,12 +2977,15 @@ togglefloating0(int x, int y, int w, int h)
 	arrange(selmon);
 }
 
-void togglefloatingacenter(const Arg *arg) {
-	int cw = (selmon->ww) * 0.7;
-	int ch = (selmon->wh) * 0.65;
-	int x = selmon->wx + (selmon->ww - cw) / 2;
-	int y = selmon->wy + (selmon->wh - ch) / 2;
-	togglefloating0(x, y, cw, ch);
+void
+togglefloatingacenter(const Arg *arg) {
+	int x, y, w = 0, h = 0;
+	// if (selmon->sel) {
+	// 	w = selmon->sel->w;
+	// 	h = selmon->sel->h;
+	// }
+	computecenter(&x, &y, &w, &h);
+	togglefloating0(x, y, w, h);
 }
 
 void
