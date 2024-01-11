@@ -252,6 +252,7 @@ static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
 static void killclientwin(const Arg *arg);
 static void killclient0(Client *c);
+static int layoutis(Monitor* m, void (*layout)(Monitor *));
 static int mkdirs(char* dir);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
@@ -517,7 +518,7 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 		*h = bh;
 	if (*w < bh)
 		*w = bh;
-	if (resizehints || c->isfloating || !c->mon->lt[c->mon->sellt]->arrange) {
+	if (resizehints || c->isfloating || layoutis(c->mon, NULL)) {
 		if (!c->hintsvalid)
 			updatesizehints(c);
 		/* see last two sentences in ICCCM 4.1.2.3 */
@@ -1461,6 +1462,8 @@ grid(Monitor *m) {
 	if (n == 0)
 		return;
 	if (n == 1) {
+		if (smartgap)
+			g = 0;
 		c = nexttiled(m->clients);
 		cw = (m->ww - 2 * g) * 0.7;
 		ch = (m->wh - 2 * g) * 0.65;
@@ -1647,6 +1650,11 @@ killclient0(Client *c) {
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
 	}
+}
+
+int
+layoutis(Monitor* m, void (*layout)(Monitor *)) {
+	return m->lt[m->sellt]->arrange == layout;
 }
 
 int
@@ -2586,7 +2594,7 @@ setlayout(const Arg *arg)
 
 	if (selmon->sel) {
 		arrange(selmon);
-		if (presolitary >= 0 && presolitary && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
+		if (presolitary == 1 && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
 			XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
 
 	} else
@@ -2777,7 +2785,7 @@ showhide(Client *c)
 	if (ISVISIBLE(c)) {
 		/* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
-		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
+		if ((layoutis(c->mon, NULL) || c->isfloating) && !c->isfullscreen)
 			resize(c, c->x, c->y, c->w, c->h, 0);
 		showhide(c->snext);
 	} else {
@@ -2791,10 +2799,10 @@ showhide(Client *c)
 int
 solitary(Client *c)
 {
-	return ((nexttiled(c->mon->clients) == c && !nexttiled(c->next)) // 可见范围内仅有指定的平铺客户端
-	    || &monocle == c->mon->lt[c->mon->sellt]->arrange) // 或者当前是monocle布局
+	return ((nexttiled(c->mon->clients) == c && !nexttiled(c->next) && smartgap) // 可见范围内仅有一个平铺客户端
+	    || layoutis(c->mon, &monocle)) // 或者当前是monocle布局
 	    && !c->isfullscreen && !c->isfloating // 并且指定的客户端不是这些情况
-	    && NULL != c->mon->lt[c->mon->sellt]->arrange && !selmon->overview;
+	    && !layoutis(c->mon, NULL) && !selmon->overview;
 }
 
 void
@@ -2970,7 +2978,7 @@ togglefloating0(int x, int y, int w, int h)
 		return;
 	int presolitary = selmon->sel ? solitary(selmon->sel) : -1; // 记录之前状态是否为solitary
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed; // 修改浮动状态
-	if (presolitary >= 0 && presolitary && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
+	if (presolitary == 1 && !solitary(selmon->sel)) // 如果之前是solitary但修改布局后不是了，需要设置下border，see focus
 		XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
 	if (selmon->sel->isfloating)
 		resize(selmon->sel, x, y, w, h, 0);
@@ -3096,6 +3104,7 @@ togglesmartgap(const Arg *arg) {
 	smartgap = smartgap ^ 1;
 	for (Monitor *m = mons; m; m = m->next)
 		arrange(m);
+	focus(NULL);
 }
 
 void

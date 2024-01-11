@@ -87,13 +87,13 @@ case $selection in
         dwm-switchmonitor 2
         ;;
     $gapsmall)
-        dwmc setgappx 10
+        dwmc setgappx 15
         ;;
     $gapmiddle)
-        dwmc setgappx 20
+        dwmc setgappx 25
         ;;
     $gaplarge)
-        dwmc setgappx 40
+        dwmc setgappx 50
         ;;
     $changewallpaper)
         dwm-changewallpaper
