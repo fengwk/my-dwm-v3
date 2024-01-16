@@ -2460,7 +2460,7 @@ sendmon(Client *c, Monitor *m)
 	detach(c);
 	detachstack(c);
 	c->mon = m;
-	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
+	c->tags = (c->tags & SPTAGMASK) | m->tagset[m->seltags]; /* assign tags of target monitor */
 	attachbylayout(c);
 	attachstack(c);
 	focus(NULL);
@@ -2832,7 +2832,7 @@ void
 tag(const Arg *arg)
 {
 	if (selmon->sel && arg->ui & TAGMASK) {
-		selmon->sel->tags = arg->ui & TAGMASK;
+		selmon->sel->tags = (selmon->sel->tags & SPTAGMASK) | (arg->ui & TAGMASK);
 		if (windowfollow)
 			view(arg);
 		focus(NULL);
@@ -3029,20 +3029,38 @@ void
 togglescratch(const Arg *arg)
 {
 	Client *c;
+	Monitor *m;
 	unsigned int found = 0;
 	unsigned int scratchtag = SPTAG(arg->ui);
 	Arg sparg = {.v = scratchpads[arg->ui].cmd};
 
-	for (c = selmon->clients; c && !(found = c->tags & scratchtag); c = c->next);
+	for (m = mons; m && !found; m = m->next)
+		for (c = m->clients; c && !(found = c->tags & scratchtag); c = c->next);
 	if (found) {
 		if (ISVISIBLE(c)) {
-			c->tags &= SPTAGMASK;
-			focus(NULL);
+			if (c->mon != selmon) {
+				// 如果当前sp可见但不再同一显示器则发送到当前显示器
+				sendmon(c, selmon);
+				focus(c);
+			} else {
+				// 如果当前sp可见且在同一显示器则隐藏
+				c->tags &= SPTAGMASK;
+				focus(NULL);
+				arrange(selmon);
+			}
 		} else {
-			c->tags = (c->tags & SPTAGMASK) | c->mon->tagset[c->mon->seltags];
-			focus(c);
+			if (c->mon != selmon) {
+				// 如果当前sp不可见且不在同一显示器则先显示再修改显示器
+				c->tags = (c->tags & SPTAGMASK) | c->mon->tagset[c->mon->seltags];
+				sendmon(c, selmon);
+				focus(c);
+			} else {
+				// 如果当前sp不可见且在同一显示器则显示
+				c->tags = (c->tags & SPTAGMASK) | c->mon->tagset[c->mon->seltags];
+				focus(c);
+				arrange(selmon);
+			}
 		}
-		arrange(selmon);
 	} else {
 		spawn(&sparg);
 	}
@@ -3057,7 +3075,7 @@ toggletag(const Arg *arg)
 		return;
 	newtags = selmon->sel->tags ^ (arg->ui & TAGMASK);
 	if (newtags) {
-		selmon->sel->tags = newtags;
+		selmon->sel->tags = (selmon->sel->tags & SPTAGMASK) | newtags;
 		focus(NULL);
 		arrange(selmon);
 	}
