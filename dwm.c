@@ -2463,6 +2463,8 @@ sendmon(Client *c, Monitor *m)
 	c->tags = (c->tags & SPTAGMASK) | m->tagset[m->seltags]; /* assign tags of target monitor */
 	attachbylayout(c);
 	attachstack(c);
+	// 重新计算窗口位置使相对屏幕其居中
+	resize(c, (m->mw - c->w) / 2 + m->mx, (m->mh - c->h) / 2 + m->my, c->w, c->h, 0);
 	focus(NULL);
 	arrange(NULL);
 }
@@ -3039,8 +3041,10 @@ togglescratch(const Arg *arg)
 	if (found) {
 		if (ISVISIBLE(c)) {
 			if (c->mon != selmon) {
-				// 如果当前sp可见但不再同一显示器则发送到当前显示器
+				// 如果当前sp可见但不在同一显示器则发送到当前显示器
 				sendmon(c, selmon);
+				// 按照新显示器重置坐标
+
 				focus(c);
 			} else {
 				// 如果当前sp可见且在同一显示器则隐藏
