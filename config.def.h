@@ -99,6 +99,7 @@ static const char *taglabels[][2] = {
   { "Timeshift-gtk", "" },
   { "pdf", "" },
   { "netease-cloud-music", "" },
+  { "yesplaymusic", "" },
   { "QQ", "" },
   { "VirtualBox Manager", "練" },
   { "VirtualBox Machine", "練" },
