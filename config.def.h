@@ -4,7 +4,7 @@
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static unsigned int gappx = 25;                 /* gap pixel between windows */
 static unsigned int fgappx = 0;                 /* gap pixel between windows */
-static unsigned int smartgap = 0;               /* 是否在单个客户端的平铺布局时移除gap */
+static unsigned int smartgap = 1;               /* 是否在单个客户端的平铺布局时移除gap */
 static const unsigned int snap = 32;            /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
@@ -17,18 +17,26 @@ static const int windowfollow       = 1;        /* 是否使窗口跟随client�
 static const char *fonts[]          = { "SauceCodePro Nerd Font:pixelsize=32" };
 static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=32";
 // 淡灰配色
-// static const char col_gray1[]       = "#222222";
-// static const char col_gray2[]       = "#444444";
-// static const char col_gray3[]       = "#bbbbbb";
-// static const char col_gray4[]       = "#eeeeee";
-// static const char col_cyan[]        = "#444444";
-// static const char col_sboard[]      = "#bbbbbb";
-static const char col_gray1[]       = "#1F1F1F";
-static const char col_gray2[]       = "#363635";
-static const char col_gray3[]       = "#E1E3E5";
-static const char col_gray4[]       = "#E1E3E5";
-static const char col_cyan[]        = "#444444";
-static const char col_sboard[]      = "#bbbbbb";
+// static const char col_gray1[]       = "#222222"; // normbgcolor hidselbgcolor
+// static const char col_gray2[]       = "#444444"; // normbordercolor
+// static const char col_gray3[]       = "#bbbbbb"; // normfgcolor
+// static const char col_gray4[]       = "#eeeeee"; // selfgcolor
+// static const char col_cyan[]        = "#444444"; // selbgcolor hidselfgcolor hidbordercolor
+// static const char col_sboard[]      = "#bbbbbb"; // selbgcolor
+// 复古黑灰
+// static const char col_gray1[]       = "#1F1F1F"; // normbgcolor hidselbgcolor
+// static const char col_gray2[]       = "#363635"; // normbordercolor
+// static const char col_gray3[]       = "#E1E3E5"; // normfgcolor
+// static const char col_gray4[]       = "#E1E3E5"; // selfgcolor
+// static const char col_cyan[]        = "#444444"; // selbgcolor hidselfgcolor hidbordercolor
+// static const char col_sboard[]      = "#bbbbbb"; // selbgcolor
+// catppuccin
+static const char col_gray1[]       = "#1E1E2E"; // normbgcolor hidselbgcolor
+static const char col_gray2[]       = "#414559"; // normbordercolor
+static const char col_gray3[]       = "#CDD6F4"; // normfgcolor
+static const char col_gray4[]       = "#CDD6F4"; // selfgcolor
+static const char col_cyan[]        = "#414559"; // selbgcolor hidselfgcolor hidbordercolor
+static const char col_sboard[]      = "#F5BDE6"; // selbordercolor
 static const char *colors[][3]      = {
   /*                 fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2  },
@@ -99,6 +107,7 @@ static const char *taglabels[][2] = {
   { "Timeshift-gtk", "" },
   { "pdf", "" },
   { "netease-cloud-music", "" },
+  { "yesplaymusic", "" },
   { "QQ", "" },
   { "VirtualBox Manager", "練" },
   { "VirtualBox Machine", "練" },
