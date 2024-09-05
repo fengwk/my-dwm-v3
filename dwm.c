@@ -282,7 +282,7 @@ static void runautosh(const char autoblocksh[], const char autosh[]);
 static void rootmenu(const Arg *arg);
 static void scan(void);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
-static void sendmon(Client *c, Monitor *m);
+static void sendmon(Client *c, Monitor *m, int center);
 static void setclientstate(Client *c, long state);
 static void setenternotify(const Arg *arg);
 static void setfocus(Client *c);
@@ -1908,7 +1908,7 @@ movemouse(const Arg *arg)
 	} while (ev.type != ButtonRelease);
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		sendmon(c, m);
+		sendmon(c, m, 0);
 		setselmon(m);
 		focus(NULL);
 	}
@@ -2233,7 +2233,7 @@ resizemouse(const Arg *arg)
 	XUngrabPointer(dpy, CurrentTime);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		sendmon(c, m);
+		sendmon(c, m, 0);
 		setselmon(m);
 		focus(NULL);
 	}
@@ -2452,7 +2452,7 @@ scan(void)
 }
 
 void
-sendmon(Client *c, Monitor *m)
+sendmon(Client *c, Monitor *m, int center)
 {
 	if (c->mon == m)
 		return;
@@ -2463,8 +2463,10 @@ sendmon(Client *c, Monitor *m)
 	c->tags = (c->tags & SPTAGMASK) | m->tagset[m->seltags]; /* assign tags of target monitor */
 	attachbylayout(c);
 	attachstack(c);
-	// 重新计算窗口位置使相对屏幕其居中
-	resize(c, (m->mw - c->w) / 2 + m->mx, (m->mh - c->h) / 2 + m->my, c->w, c->h, 0);
+	if (center) {
+		// 重新计算窗口位置使相对屏幕其居中
+		resize(c, (m->mw - c->w) / 2 + m->mx, (m->mh - c->h) / 2 + m->my, c->w, c->h, 0);
+	}
 	focus(NULL);
 	arrange(NULL);
 }
@@ -2848,7 +2850,7 @@ tagmon(const Arg *arg)
 	if (!selmon->sel || !mons->next)
 		return;
 	Monitor *m = dirtomon(arg->i);
-	sendmon(selmon->sel, m);
+	sendmon(selmon->sel, m, 1);
 	if (windowfollow)
 		switchtomon(m);
 
@@ -3042,7 +3044,7 @@ togglescratch(const Arg *arg)
 		if (ISVISIBLE(c)) {
 			if (c->mon != selmon) {
 				// 如果当前sp可见但不在同一显示器则发送到当前显示器
-				sendmon(c, selmon);
+				sendmon(c, selmon, 1);
 				// 按照新显示器重置坐标
 
 				focus(c);
@@ -3056,7 +3058,7 @@ togglescratch(const Arg *arg)
 			if (c->mon != selmon) {
 				// 如果当前sp不可见且不在同一显示器则先显示再修改显示器
 				c->tags = (c->tags & SPTAGMASK) | c->mon->tagset[c->mon->seltags];
-				sendmon(c, selmon);
+				sendmon(c, selmon, 1);
 				focus(c);
 			} else {
 				// 如果当前sp不可见且在同一显示器则显示
