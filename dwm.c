@@ -126,6 +126,7 @@ struct Client {
 	Monitor *mon;
 	Window win;
 	int hid;
+	long long lasturgentms;
 };
 
 typedef struct {
@@ -216,6 +217,7 @@ static void buttonpress(XEvent *e);
 static void checkotherwm(void);
 static void cleanup(void);
 static void cleanupmon(Monitor *mon);
+static void clearurgentwin(const Arg *arg);
 static void clientmessage(XEvent *e);
 static void computecenter(int *x, int *y, int *w, int *h);
 static void configure(Client *c);
@@ -265,6 +267,7 @@ static void movemouse(const Arg *arg);
 static void movewin(const Arg *arg);
 static Client *nexttiled(Client *c);
 static void pop(Client *c);
+static void processurgentclient(Client *c);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
@@ -300,6 +303,7 @@ static void showhide(Client *c);
 static int solitary(Client *c);
 static void spawn(const Arg *arg);
 static void switchtoclient(Client *c);
+static void switchtoclientwin(const Arg *arg);
 static void switchtomon(Monitor *m);
 static void switchprevclient(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
@@ -751,6 +755,16 @@ cleanupmon(Monitor *mon)
 	free(mon);
 }
 
+// 清理指定窗口的urgent
+void
+clearurgentwin(const Arg *arg)
+{
+	if (arg && arg->ul) {
+		Client *c = wintoclient(arg->ul);
+		seturgent(c, 0);
+	}
+}
+
 void
 clientmessage(XEvent *e)
 {
@@ -816,7 +830,7 @@ clientmessage(XEvent *e)
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
 		if (c != selmon->sel && !c->isurgent)
 			seturgent(c, 1);
-		switchtoclient(c);
+		processurgentclient(c);
 	}
 }
 
@@ -1690,6 +1704,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->oldbw = wa->border_width;
 	c->bw = borderpx;
 	c->hid = 0;
+	c->lasturgentms = 0;
 
 	// 浮动布局居中
 	if (selmon->lt[selmon->sellt] && !selmon->lt[selmon->sellt]->arrange) {
@@ -2039,6 +2054,46 @@ pop(Client *c)
 	attach(c);
 	focus(c);
 	arrange(c->mon);
+}
+
+// 处理紧急通知的client
+void
+processurgentclient(Client *c)
+{
+	// 如果当前窗口就是urgent则无需处理
+	if (c == selmon->sel) {
+		return;
+	}
+
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	long long curms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	// 指定时间内多次urgent忽略
+	if (curms - c->lasturgentms < 1000) {
+		return;
+	}
+
+	// 使用扩展性的方式执行一个脚本来处理紧急窗口
+	// 另一种方式是发送一个通知，允许用户选择是否要跳转到该窗口
+	char winid[32];
+	sprintf(winid, "%lu", c->win);
+
+	// 获取窗口的class信息用于判断
+	XClassHint ch = { NULL, NULL };
+	XGetClassHint(dpy, c->win, &ch);
+	const char *res_class = ch.res_class && strlen(ch.res_class) > 0 ? ch.res_class : "unknown";
+	const char *res_name = ch.res_name && strlen(ch.res_name) > 0 ? ch.res_name : "unknown";
+
+	const char *cmd[] = { "dwm-processurgentclient", winid, res_class, res_name, NULL };
+	Arg a = {.v = cmd};
+	spawn(&a);
+
+	if (ch.res_class)
+		XFree(ch.res_class);
+	if (ch.res_name)
+		XFree(ch.res_name);
+
+	c->lasturgentms = curms;
 }
 
 void
@@ -3818,6 +3873,15 @@ switchtoclient(Client *c) {
 	if (selmon->sel != c) {
 		focus(c);
 		restack(selmon);
+	}
+}
+
+void
+switchtoclientwin(const Arg *arg)
+{
+	if (arg && arg->ul) {
+		Client *c = wintoclient(arg->ul);
+		switchtoclient(c);
 	}
 }
 

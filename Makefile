@@ -62,6 +62,7 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-toggletouchpad $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-clearcache $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-pickcolor $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-processurgentclient $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
@@ -84,5 +85,6 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-toggletouchpad
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-clearcache
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-pickcolor
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-processurgentclient
 
 .PHONY: all options clean dist install uninstall

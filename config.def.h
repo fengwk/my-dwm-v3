@@ -367,4 +367,6 @@ static Signal signals[] = {
 	{ "killclientwin",     killclientwin },
 	{ "togglehide",        togglehide },
 	{ "focusstackvis",     focusstackvis },
+	{ "switchtoclientwin", switchtoclientwin },
+	{ "clearurgentwin",    clearurgentwin },
 };

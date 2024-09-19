@@ -1,0 +1,30 @@
+#!/bin/bash
+
+win_id=$1
+win_class=$2
+win_name=$3
+
+log_file="$HOME/dwm.log"
+notify_interval=5
+
+if grep -q "$win_class" <<< "$DWM_URGENT_IGNORE" || grep -q "$win_name" <<< "$DWM_URGENT_IGNORE"; then
+    echo "[$(date +%s)] ignore urgent window $win_id $win_class $win_name" >> "$log_file"
+    dwmc clearurgentwin $win_id
+elif grep -q "$win_class" <<< "$DWM_URGENT_FORCE" || grep -q "$win_name" <<< "$DWM_URGENT_FORCE"; then
+    echo "[$(date +%s)] force goto urgent window $win_id $win_class $win_name" >> "$log_file"
+    dwmc switchtoclientwin $win_id
+else
+    echo "[$(date +%s)] notify urgent window $win_id $win_class $win_name" >> "$log_file"
+    selected=$(notify-send -t 15000 -A "jump=Jump" -A "cancel=Cancel" "$win_name" "Jump to urgent window")
+    case "$selected" in
+        'jump')
+            dwmc switchtoclientwin $win_id
+            ;;
+        'cancel')
+            dwmc clearurgentwin $win_id
+            ;;
+        *)
+            dwmc switchtoclientwin $win_id
+            ;;
+    esac
+fi
