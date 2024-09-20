@@ -126,7 +126,7 @@ struct Client {
 	Monitor *mon;
 	Window win;
 	int hid;
-	long long lasturgentms;
+	// long long lasturgentms;
 };
 
 typedef struct {
@@ -224,6 +224,7 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
+static long long currentMs(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
@@ -828,9 +829,10 @@ clientmessage(XEvent *e)
 			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
 				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
-		if (c != selmon->sel && !c->isurgent)
+		if (c != selmon->sel && !c->isurgent) {
 			seturgent(c, 1);
-		processurgentclient(c);
+			processurgentclient(c);
+		}
 	}
 }
 
@@ -977,6 +979,14 @@ createmon(void)
 	}
 
 	return m;
+}
+
+long long
+currentMs(void) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	long long curms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	return curms;
 }
 
 void
@@ -1172,9 +1182,7 @@ enternotify(XEvent *e)
 		return;
 
 	// 抑制在tagmon之后的enternotify
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	long long curms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	long long curms = currentMs();
 	if (tagmonms && curms - tagmonms < 50)
 		return;
 
@@ -1704,7 +1712,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->oldbw = wa->border_width;
 	c->bw = borderpx;
 	c->hid = 0;
-	c->lasturgentms = 0;
+	// c->lasturgentms = 0;
 
 	// 浮动布局居中
 	if (selmon->lt[selmon->sellt] && !selmon->lt[selmon->sellt]->arrange) {
@@ -1829,9 +1837,7 @@ mousefocus(const Arg *arg) {
 
 void
 mousemove(const Arg *arg) {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  long long curms = (long long) tv.tv_sec * 1000 + tv.tv_usec/ 1000;
+  long long curms = currentMs();
   if (curms - prevmousemove < 100) {
     if (beginmousemove == 0) {
       beginmousemove = curms;
@@ -2065,13 +2071,11 @@ processurgentclient(Client *c)
 		return;
 	}
 
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	long long curms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	// 指定时间内多次urgent忽略
-	if (curms - c->lasturgentms < 1000) {
-		return;
-	}
+	// long long curms = currentMs();
+	// // 指定时间内多次urgent忽略
+	// if (curms - c->lasturgentms < 1000) {
+	// 	return;
+	// }
 
 	// 使用扩展性的方式执行一个脚本来处理紧急窗口
 	// 另一种方式是发送一个通知，允许用户选择是否要跳转到该窗口
@@ -2093,7 +2097,7 @@ processurgentclient(Client *c)
 	if (ch.res_name)
 		XFree(ch.res_name);
 
-	c->lasturgentms = curms;
+	// c->lasturgentms = curms;
 }
 
 void
@@ -2910,9 +2914,7 @@ tagmon(const Arg *arg)
 		switchtomon(m);
 
 	// 记录完成tagmon的时间
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	tagmonms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	tagmonms = currentMs();
 }
 
 void
