@@ -289,7 +289,6 @@ static void scan(void);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m, int center);
 static void setclientstate(Client *c, long state);
-static void setenternotify(const Arg *arg);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setgappx(const Arg *arg);
@@ -298,6 +297,7 @@ static void setmfact(const Arg *arg);
 static void setoverview(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
+static void setrofimode(const Arg *arg);
 static void setselmon(Monitor *m);
 static void showall(const Arg *arg);
 static void showwin(Client *c);
@@ -402,7 +402,7 @@ static long long beginmousemove = 0; // 开始movemouse的时间戳
 static long long prevmousemove = 0; // 前一次movemouse的时间戳
 
 static long long tagmonms; // 完成tagmontime的事件
-static int enableenternotify = 1; // 是否开启enternotify
+static int rofimode = 0; // 是否处于rofi模式
 static Monitor *mouseselmon; // 鼠标选中的monitor
 
 /* configuration, allows nested code to access above variables */
@@ -1179,7 +1179,9 @@ enternotify(XEvent *e)
 	Client *c;
 	XCrossingEvent *ev = &e->xcrossing;
 
-	if (!enableenternotify)
+	// 在rofi模式启用期间抑制enternotify
+	// 避免由于rofi窗口销毁而错误定位到鼠标所在的窗口
+	if (rofimode)
 		return;
 
 	// 抑制在tagmon之后的enternotify
@@ -1249,6 +1251,14 @@ focus(Client *c)
 	} else {
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+	}
+	// 如果sel将发生改变那么需要更新selwin的状态
+	if (c) {
+		char selwin[32];
+		snprintf(selwin, LENGTH(selwin), "%lu", c->win);
+		writedwmstatus("selwin", selwin);
+	} else {
+		writedwmstatus("selwin", "");
 	}
 	selmon->sel = c;
 	drawbars();
@@ -2067,11 +2077,6 @@ pop(Client *c)
 void
 processurgentclient(Client *c)
 {
-	// 如果当前窗口就是urgent则无需处理
-	if (c == selmon->sel) {
-		return;
-	}
-
 	// long long curms = currentMs();
 	// // 指定时间内多次urgent忽略
 	// if (curms - c->lasturgentms < 1000) {
@@ -2081,7 +2086,7 @@ processurgentclient(Client *c)
 	// 使用扩展性的方式执行一个脚本来处理紧急窗口
 	// 另一种方式是发送一个通知，允许用户选择是否要跳转到该窗口
 	char winid[32];
-	sprintf(winid, "%lu", c->win);
+	snprintf(winid, LENGTH(winid), "%lu", c->win);
 
 	// 获取窗口的class信息用于判断
 	XClassHint ch = { NULL, NULL };
@@ -2089,7 +2094,10 @@ processurgentclient(Client *c)
 	const char *res_class = ch.res_class && strlen(ch.res_class) > 0 ? ch.res_class : "unknown";
 	const char *res_name = ch.res_name && strlen(ch.res_name) > 0 ? ch.res_name : "unknown";
 
-	const char *cmd[] = { "dwm-processurgentclient", winid, res_class, res_name, NULL };
+	char currofimode[8];
+	snprintf(currofimode, LENGTH(currofimode), "%d", rofimode);
+
+	const char *cmd[] = { "dwm-processurgentwindow", winid, res_class, res_name, currofimode, NULL };
 	Arg a = {.v = cmd};
 	spawn(&a);
 
@@ -2556,11 +2564,6 @@ setclientstate(Client *c, long state)
 		PropModeReplace, (unsigned char *)data, 2);
 }
 
-void
-setenternotify(const Arg *arg) {
-	enableenternotify = arg->i;
-}
-
 int
 sendevent(Window w, Atom proto, int mask, long d0, long d1, long d2, long d3, long d4)
 {
@@ -2819,12 +2822,17 @@ seturgent(Client *c, int urg)
 }
 
 void
+setrofimode(const Arg *arg) {
+	rofimode = arg->i;
+}
+
+void
 setselmon(Monitor *m) {
 	if (m != selmon) {
 		selmon = m;
 		char monnum[8];
 		snprintf(monnum, LENGTH(monnum), "%d", selmon->num);
-		writedwmstatus("monitor", monnum);
+		writedwmstatus("selmon", monnum);
 	}
 }
 

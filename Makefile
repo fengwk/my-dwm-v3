@@ -57,12 +57,17 @@ install: all
 	ln -fs $(CURDIR)/scripts/dwm-sp2 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-sp3 $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-rofi $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-rofirun $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-rofisearch $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-rofipaste $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-roficlipster $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-titlemenu $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-rootmenu $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-toggletouchpad $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-clearcache $(DESTDIR)$(PREFIX)/bin
 	ln -fs $(CURDIR)/scripts/dwm-pickcolor $(DESTDIR)$(PREFIX)/bin
-	ln -fs $(CURDIR)/scripts/dwm-processurgentclient $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-processurgentwindow $(DESTDIR)$(PREFIX)/bin
+	ln -fs $(CURDIR)/scripts/dwm-status $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
@@ -80,11 +85,16 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp2
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-sp3
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofi
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofirun
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofisearch
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rofipaste
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-roficlipster
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-titlemenu
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-rootmenu
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-toggletouchpad
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-clearcache
 	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-pickcolor
-	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-processurgentclient
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-processurgentwindow
+	rm -f $(DESTDIR)$(PREFIX)/bin/dwm-status
 
 .PHONY: all options clean dist install uninstall

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+hiscount=300
+clipster -c -o -n $hiscount -0 | dwm-rofipaste -s '\0' -m $HOME/.config/rofi/rofi-paste-list.json

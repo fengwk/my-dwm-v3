@@ -203,9 +203,9 @@ static const Layout layouts[] = {
 static const char *termcmd[]  = { "dwm-termcmd", NULL };
 
 /* rofi commands */
-static const char *rofi_run[] = { "dwm-rofi", "-show", "combi", "-combi-modes", "window,drun,run", "-modes", "combi", NULL };
-static const char *rofi_browser[] = { "rofi-broswer", NULL };
-static const char *rofi_clipster[] = { "rofi-clipster", NULL };
+static const char *rofi_run[] = { "dwm-rofirun", NULL };
+static const char *rofi_browser[] = { "dwm-rofisearch", "search", NULL };
+static const char *rofi_clipster[] = { "dwm-roficlipster", NULL };
 
 /* monitor */
 static const char *switchmonitor1[] = { "dwm-switchmonitor", "1", NULL };
@@ -359,7 +359,7 @@ static Signal signals[] = {
 	{ "setgappx",          setgappx },
 	{ "togglesmartgap",    togglesmartgap },
 	{ "showall",           showall },
-	{ "setenternotify",    setenternotify },
+	{ "setrofimode",       setrofimode },
 	{ "viewtoleft",        viewtoleft },
 	{ "viewtoright",       viewtoright },
 	{ "setoverview",       setoverview },

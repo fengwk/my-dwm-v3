@@ -1,0 +1,208 @@
+#!/bin/python3
+
+import argparse
+import sys
+import json
+import subprocess
+import fnmatch
+
+
+"""
+paste_list 应该是一个json列表，格式如下：
+[{"display":"xxx","content":"xyxy","shell":"shell command"}]
+"""
+
+rofi_command = """\
+dwm-rofi -dmenu -i -p '%s' -kb-custom-8 'Ctrl+Return' -kb-accept-custom ''\
+"""
+terms = ["alacritty", "kitty", "st*", "*term",
+         "*terminal", "konsole", "terminator", "urxvt", "zutty",
+         "jetbrains-idea",  # vim mode
+         "jetbrains-idea-ce"  # vim mode
+         ]
+
+
+def merge_paste_list(L1, L2):
+    L = []
+    if L1 and len(L1) > 0:
+        for v in L1:
+            L.append(v)
+    if L2 and len(L2) > 0:
+        for v in L2:
+            L.append(v)
+    return L
+
+
+def load_paste_list(path):
+    with open(path, "r") as f:
+        return parse_paste_list(f.read())
+    return []
+
+
+def adapte_paste_list(L):
+    paste_list = []
+    if L and len(L) > 0:
+        for v in L:
+            paste_list.append({
+                "display": v.replace("\n", "\\n"),
+                "content": v
+            })
+    return paste_list
+
+
+def bits(paste_list):
+    sz = len(paste_list)
+    bit = 1
+    val = 10
+    while val <= sz:
+        bit += 1
+        val *= 10
+    return bit
+
+
+def parse_paste_list(json_str):
+    return json.loads(json_str)
+
+
+def extract_display_list(paste_list, bit):
+    L = []
+    if paste_list and len(paste_list) > 0:
+        for i, item in enumerate(paste_list):
+            display = item["display"][0:5000]
+            L.append(("%0" + str(bit) + "d %s") % (i+1, display))
+    return L
+
+
+def get_content(paste_list, display, bit):
+    i = int(display[0:bit]) - 1
+    content = display
+    if "content" in paste_list[i]:
+        content = paste_list[i].get("content")
+    elif "shell" in paste_list[i]:
+        shell = paste_list[i].get("shell")
+        process = subprocess.Popen(
+                shell, shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+        shell_out, error = process.communicate()
+        if error:
+            sys.stderr.write(str(error))
+            exit(1)
+        content = shell_out.decode().strip()
+    return content
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="rofi paste, should input content to paste")
+    parser.add_argument("-s", "--split",
+                        dest="split", help="specify the separator")
+    parser.add_argument("-p", "--prompt", default="",
+                        dest="prompt", help="rofi -p")
+    parser.add_argument("-m", "--merge", action="append",
+                        dest="merge", help="merge rofi paste list")
+    args = parser.parse_args()
+
+    # 读取输入
+    input = sys.stdin.read()
+    if args.split:
+        sp = args.split
+        sp = sp == "\\n" and "\n" or sp
+        sp = sp == "\\0" and "\0" or sp
+        L = input.split(sp)
+        paste_list = adapte_paste_list(L)
+    else:
+        paste_list = parse_paste_list(input)
+    if args.merge and len(args.merge) > 0:
+        for m in args.merge:
+            paste_list = merge_paste_list(paste_list, load_paste_list(m))
+    bit = bits(paste_list)
+    display_list = extract_display_list(paste_list, bit)
+
+    # 获取当前窗口id
+    # xdotool getwindowfocus 获取当前活动窗口的句柄，即当前用户正在与之交互的窗口的句柄，可以是各种类型的窗口，包括浮动窗口、对话框等等。
+    # xdotool getactivewindow 获取当前有焦点的窗口的句柄，即当前正在接受键盘输入的窗口的句柄，通常是一个应用程序的主窗口。如果用户正在与一个对话框或浮动窗口交互，那么这个命令返回的是主窗口的句柄，而不是对话框或浮动窗口的句柄。
+    process = subprocess.Popen("xdotool getwindowfocus",
+                               shell=True, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # 使用dwm提供的selwin避免xdotool出现错乱问题
+    # process = subprocess.Popen("cat ~/.cache/dwm/status/selwin",
+    #                            shell=True, stdin=subprocess.PIPE,
+    #                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    win_id_out, error = process.communicate()
+    if error:
+        sys.stderr.write(str(error))
+        exit(1)
+    win_id = int(win_id_out.decode().strip())
+
+    with open("/home/fengwk/.cache/dwm/status/selwin", "r") as f:
+        val = f.read()
+        print("selwin", val)
+
+    print("winid", win_id)
+
+    # 执行rofi命令选择合适的display
+    process = subprocess.Popen(rofi_command % (args.prompt),
+                               shell=True, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    selection_out, error = process.communicate(
+        input="\n".join(display_list).encode())
+    if error:
+        sys.stderr.write(str(error))
+        exit(1)
+    selection = selection_out.decode()
+    rofi_ret = process.returncode
+    # 如果没选择任何内容则直接退出
+    if not selection or len(selection) == 0:
+        return
+
+    # 获取要黏贴窗口的wm_class
+    process = subprocess.Popen("xdotool getwindowclassname " + str(win_id),
+                               shell=True, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    wm_class_out, error = process.communicate()
+    if error:
+        # ubuntu版本xdotool工具版本较低没有getwindowclassname函数，直接降级到不自动黏贴
+        rofi_ret = 17
+        sys.stderr.write(str(error))
+        # exit(1)
+    wm_class = wm_class_out.decode().strip()
+
+    # 获取内容
+    content = get_content(paste_list, selection, bit)
+
+    # 复制内容到最新的剪切板中
+    process = subprocess.Popen("clipster -c",
+                               shell=True, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, error = process.communicate(input=content.encode())
+    if error:
+        sys.stderr.write(str(error))
+        exit(1)
+
+    # 检查是否要直接黏贴
+    if rofi_ret != 17:
+        process = subprocess.Popen(
+                "xdotool windowactivate %d" % win_id,
+                shell=True)
+
+        if any(fnmatch.fnmatchcase(wm_class.lower(), pattern) for pattern in terms):
+            # sleep是为了保证在执行时已超过了手动按键的间隔时间
+            # process = subprocess.Popen(
+            #     "sleep 0.05 && xdotool key --delay 0 --clearmodifiers Ctrl+V",
+            #     shell=True)
+            process = subprocess.Popen(
+                "sleep 0.03 && xdotool key --delay 0 Ctrl+V",
+                shell=True)
+        else:
+            # process = subprocess.Popen(
+            #     "sleep 0.05 && xdotool key --delay 0 --clearmodifiers Ctrl+v",
+            #     shell=True)
+            process = subprocess.Popen(
+                "sleep 0.03 && xdotool key --delay 0 Ctrl+v",
+                shell=True)
+
+
+if __name__ == "__main__":
+    main()

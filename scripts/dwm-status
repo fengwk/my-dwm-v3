@@ -1,0 +1,19 @@
+#!/bin/bash
+
+dwm_status_dir="$HOME/.cache/dwm/status/"
+
+
+case "$1" in
+    'selwin')
+        cat "$dwm_status_dir/selwin"
+        ;;
+    'selmon')
+        cat "$dwm_status_dir/selmon"
+        ;;
+    *)
+        echo "show dwm status
+        $0 selwin
+        $0 selmon
+        "
+        ;;
+esac

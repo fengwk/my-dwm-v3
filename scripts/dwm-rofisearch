@@ -1,0 +1,161 @@
+#!/bin/python3
+
+import argparse
+import os
+import json
+import hashlib
+from pypinyin import lazy_pinyin
+import subprocess
+import re
+
+browser = "google-chrome"
+
+
+def support_pinyin(bookmarks):
+    for item in bookmarks:
+        name = item["name"]
+        pys = lazy_pinyin(name)
+        fpys = []
+        for py in pys:
+            fpys.append(py[0])
+        item["name"] = " | ".join([name, "".join(pys), "".join(fpys)])
+
+
+def parse_children(children, bookmarks):
+    for item in children:
+        if "children" in item:
+            parse_children(item.get("children", []), bookmarks)
+        else:
+            name = item.get("name")
+            pys = lazy_pinyin(name)
+            fpys = []
+            for py in pys:
+                fpys.append(py[0])
+            bookmarks.append(
+                {"name": item.get("name", ""), "url": item.get("url")})
+
+
+def get_bookmarks():
+    bookmark_path = os.path.expanduser(
+        "~/.config/" + browser + "/Default/Bookmarks")
+    cache_path = os.path.expanduser("~/.cache/rofi-bookmarks.json")
+    bookmarks = []
+    if os.path.exists(bookmark_path):
+        with open(bookmark_path, "r") as file:
+            data = file.read()
+            bookmark = json.loads(data)
+            bar = bookmark.get("roots", {}).get(
+                "bookmark_bar", {}).get("children", [])
+            other = bookmark.get("roots", {}).get(
+                "other", {}).get("children", [])
+            parse_children(bar, bookmarks)
+            parse_children(other, bookmarks)
+        # 首先尝试从缓存中读取
+        md5 = hashlib.md5(json.dumps(bookmarks).encode()).hexdigest()
+        if os.path.exists(cache_path):
+            with open(cache_path, "r") as file:
+                cache = json.loads(file.read())
+                if cache and cache.get("md5", "") == md5:
+                    return cache.get("bookmarks", {})
+        # 缓存中没有进行pinyin处理再进行缓存
+        support_pinyin(bookmarks)
+        cache = {
+            "bookmarks": bookmarks,
+            "md5": md5
+        }
+        with open(cache_path, "w") as file:
+            json.dump(cache, file)
+    return bookmarks
+
+
+def list_bookmarks(args):
+    bookmarks = get_bookmarks()
+    if len(bookmarks) == 0:
+        return ""
+    s = bookmarks[0].get("name", "")
+    for item in bookmarks[1:]:
+        s += "\n" + item.get("name", "")
+    return s
+
+# 查询历史存在问题，在浏览器打开状态下无法获取历史信息
+# def get_history():
+#   his_path = os.path.expanduser("~/.config/microsoft-edge/Default/History")
+#   with sqlite3.connect(his_path) as conn:
+#     cursor = conn.cursor()
+#     sql = "SELECT urls.url, visits.visit_time FROM urls, visits WHERE urls.id = visits.url order by visits.visit_time desc;"
+#     cursor.execute(sql)
+#     results = cursor.fetchall()
+#     for row in results:
+#         print(row)
+
+
+def get_url(args):
+    if len(args) <= 0:
+        raise ValueError("should given name")
+    input_name = " ".join(args)
+    bookmarks = get_bookmarks()
+    for item in bookmarks:
+        if item.get("name").strip() == input_name.strip():
+            return item.get("url", "")
+    return ""
+
+
+def rofi_search(args):
+    bookmarks = list_bookmarks([])
+    rofi_search_cmd = ["dwm-rofi", "-dmenu", "-i", "-p", ""]
+    rofi_result = subprocess.run(
+        rofi_search_cmd, input=bookmarks, capture_output=True, text=True)
+    selected = rofi_result.stdout
+    url = get_url([selected])
+    if len(url) == 0 and len(selected) > 0:
+        url = selected
+    open_or_search([url])
+
+
+def open_or_search(args):
+    if len(args) <= 0:
+        raise ValueError("should given url")
+    url = args[0]
+    if len(url) > 0:
+        if not re.search(r"^http[s]?://|^file://", url):
+            if re.search(r"^[a-zA-Z]+\.(com|cn|net|fun|org|me|xyz|top|pub|edu|tech|pub|mil)", url):
+                url = "https://" + url
+            else:
+                url = "https://www.google.com/search?q=" + url
+        p = subprocess.Popen(["dwmc", "setrofimode", "1"])
+        p.wait()
+        subprocess.Popen(
+            ["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        p = subprocess.Popen(["dwmc", "setrofimode", "0"])
+        p.wait()
+
+
+def main():
+    commands = {
+        "list": list_bookmarks,
+        "get-url": get_url,
+        "search": rofi_search,
+        "open-or-search": open_or_search
+    }
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", help="[list|get-url|search|open-or-search]")
+    parser.add_argument("args", nargs="*")
+    try:
+        args = parser.parse_args()
+        command = commands.get(args.command)
+        if not command:
+            raise InvaildParameterError(
+                "command", "can not found this command")
+            exit(1)
+        out = command(args.args)
+        if out:
+            print(out)
+    except Exception as e:
+        print(e)
+        parser.print_help()
+        exit(1)
+
+
+if __name__ == "__main__":
+    main()

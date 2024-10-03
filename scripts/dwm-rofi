@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# 关闭enternotify
-dwmc setenternotify 0
+# 先关闭enternotify，否则会由于rofi面板销毁后由于enternotify导致错误的窗口定位
+dwmc setrofimode 1
+# 先存储当前winid
+# store_win_id=$(dwm-status selwin)
 
 # 获取dwm monitor并转为rofi monitor
-dwm_mon_num=$(cat ~/.cache/dwm/status/monitor)
+dwm_mon_num=$(dwm-status selmon)
 mon=$(rofi -h | grep -w -B 1 "$(xrandr --listactivemonitors | tail +2 | sed -E 's/ *([0-9]+): +[^ ]+ +[^ ]+ +([^ ]+)/\1 \2/' | grep -E "^$dwm_mon_num" | cut -d ' ' -f 2)" | head -1 | sed -E 's/.*([0-9]+).*/\1/')
 
 # 执行rofi
@@ -16,8 +18,12 @@ fi
 # 保存rofi执行结果
 roficode=$?
 
+# 重新定位到之前存储的win_id
+# if [ -n "$store_win_id" ]; then
+#     dwmc switchtoclientwin $store_win_id
+# fi
 # 重新打开enternotify
-dwmc setenternotify 1
+dwmc setrofimode 0
 
 # 返回rofi执行结果
 exit $roficode
