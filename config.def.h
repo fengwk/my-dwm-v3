@@ -369,4 +369,5 @@ static Signal signals[] = {
 	{ "focusstackvis",     focusstackvis },
 	{ "switchtoclientwin", switchtoclientwin },
 	{ "clearurgentwin",    clearurgentwin },
+	{ "pullurgentwin",     pullurgentwin },
 };

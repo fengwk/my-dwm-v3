@@ -13,6 +13,8 @@ if grep -q "$win_class" <<< "$DWM_URGENT_IGNORE" || grep -q "$win_name" <<< "$DW
 elif grep -q "$win_class" <<< "$DWM_URGENT_FORCE" || grep -q "$win_name" <<< "$DWM_URGENT_FORCE"; then
     echo "[$(date +%s)] force goto urgent window $win_id $win_class $win_name" >> "$log_file"
     dwmc switchtoclientwin $win_id
+elif grep -q "$win_class" <<< "$DWM_URGENT_PULL" || grep -q "$win_name" <<< "$DWM_URGENT_PULL"; then
+    dwmc pullurgentwin $win_id
 else
     echo "[$(date +%s)] notify urgent window $win_id $win_class $win_name" >> "$log_file"
     selected=$(notify-send -t 15000 -A "jump=Jump" -A "cancel=Cancel" "$win_name" "Jump to urgent window")

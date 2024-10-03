@@ -270,6 +270,7 @@ static Client *nexttiled(Client *c);
 static void pop(Client *c);
 static void processurgentclient(Client *c);
 static void propertynotify(XEvent *e);
+static void pullurgentwin(const Arg *arg);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void removesystrayicon(Client *i);
@@ -2147,6 +2148,22 @@ propertynotify(XEvent *e)
 		}
 		if (ev->atom == netatom[NetWMWindowType])
 			updatewindowtype(c);
+	}
+}
+
+void
+pullurgentwin(const Arg *arg)
+{
+	if (arg && arg->ul) {
+		Client *c = wintoclient(arg->ul);
+		if (c) {
+			seturgent(c, 0);
+			Client *sel = selmon->sel;
+			sendmon(c, sel->mon, 0);
+			c->tags = (c->tags & SPTAGMASK) | (selmon->sel->tags & TAGMASK);
+			focus(c);
+			arrange(selmon);
+		}
 	}
 }
 
