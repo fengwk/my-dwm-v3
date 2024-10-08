@@ -31,12 +31,21 @@ static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=32";
 // static const char col_cyan[]        = "#444444"; // selbgcolor hidselfgcolor hidbordercolor
 // static const char col_sboard[]      = "#bbbbbb"; // selbgcolor
 // catppuccin
-static const char col_gray1[]       = "#1E1E2E"; // normbgcolor hidselbgcolor
+// static const char col_gray1[]       = "#1E1E2E"; // 与背景色不同，下面的col_gray1与背景色一致可以营造无边框的感觉
+static const char col_gray1[]       = "#24273A"; // normbgcolor hidselbgcolor
 static const char col_gray2[]       = "#414559"; // normbordercolor
-static const char col_gray3[]       = "#CDD6F4"; // normfgcolor
-static const char col_gray4[]       = "#CDD6F4"; // selfgcolor
+static const char col_gray3[]       = "#CAD3F5"; // normfgcolor
+static const char col_gray4[]       = "#CAD3F5"; // selfgcolor
 static const char col_cyan[]        = "#414559"; // selbgcolor hidselfgcolor hidbordercolor
 static const char col_sboard[]      = "#F5BDE6"; // selbordercolor
+// gruvbox-flat
+// // static const char col_gray1[]       = "#1d2021"; // normbgcolor hidselbgcolor
+// static const char col_gray1[]       = "#282828"; // normbgcolor hidselbgcolor
+// static const char col_gray2[]       = "#3c3836"; // normbordercolor
+// static const char col_gray3[]       = "#d4be98"; // normfgcolor
+// static const char col_gray4[]       = "#d4be98"; // selfgcolor
+// static const char col_cyan[]        = "#3c3836"; // selbgcolor hidselfgcolor hidbordercolor
+// static const char col_sboard[]      = "#d3869b"; // selbordercolor
 static const char *colors[][3]      = {
   /*                 fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2  },
