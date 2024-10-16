@@ -27,6 +27,9 @@ quitdwm=' 󰿅 Quit DWM'
 reboot='  Reboot'
 shutdown='  Shutdown Now'
 
+# TODO 不sleep在公司电脑的环境下无法打开xmenu
+sleep 0.1
+
 selection=$(
 cat << EOF | xmenu
 $newterminal

@@ -6,6 +6,9 @@ killclientwin=' 󰅗 Kill Client'
 togglefullscrwin=' 󰊓 Toggle Fullscreen'
 togglehide='  Toggle Hide'
 
+# TODO 不sleep在公司电脑的环境下无法打开xmenu
+sleep 0.1
+
 selection=$(
 cat << EOF | xmenu
 $killclientwin
