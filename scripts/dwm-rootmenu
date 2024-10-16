@@ -69,7 +69,12 @@ case $selection in
         exec google-chrome-stable
         ;;
     $idea)
-        exec intellij-idea-ultimate-edition
+        if [ -x "$(which intellij-idea-community)" ]; then
+            exec intellij-idea-community
+        fi
+        if [ -x "$(which idea-ce)" ]; then
+            exec idea-ce
+        fi
         ;;
     $popo)
         exec /opt/apps/popo/files/Elevator.sh
