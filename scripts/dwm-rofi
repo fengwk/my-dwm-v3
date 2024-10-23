@@ -23,6 +23,7 @@ roficode=$?
 #     dwmc switchtoclientwin $store_win_id
 # fi
 # 重新打开enternotify
+sleep 0.1 # 尝试等待解决跳转失败的问题，如果仍会跳转失败说明无效
 dwmc setrofimode 0
 
 # 返回rofi执行结果
