@@ -131,6 +131,7 @@ static const char *taglabels[][2] = {
   { "com.xunlei.download", "" },
   { "FreeCAD", "󰻬" },
   { "Creality Print", "" },
+  { "国泰君安富易", "󰠟" },
 };
 
 /* scratchpads */
