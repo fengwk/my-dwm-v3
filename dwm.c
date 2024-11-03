@@ -763,7 +763,9 @@ clearurgentwin(const Arg *arg)
 {
 	if (arg && arg->ul) {
 		Client *c = wintoclient(arg->ul);
-		seturgent(c, 0);
+		if (c) {
+			seturgent(c, 0);
+		}
 	}
 }
 
