@@ -1,4 +1,5 @@
 #!/bin/bash
 
-st -n "$1" -g 135x35
+# st -n "$1" -g 135x35
 # st -n "$1" -g 135x35 -e bash -c 'nvim'
+alacritty --class "$1"

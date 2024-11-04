@@ -1,3 +1,4 @@
 #!/bin/bash
 
-st -n "$1" -g 135x35
+# st -n "$1" -g 135x35
+alacritty --class "$1"

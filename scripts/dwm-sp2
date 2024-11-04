@@ -1,3 +1,4 @@
 #!/bin/bash
 
-st -n "$1" -g 135x35 -e bash -c 'cd /home/fengwk/Documents/work && nvim'
+# st -n "$1" -g 135x35 -e bash -c 'cd /home/fengwk/Documents/work && nvim'
+alacritty --class "$1" -e bash -c 'cd /home/fengwk/Documents/work && nvim'
