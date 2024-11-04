@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # st -n "$1" -g 135x35 -e ranger
-alacritty --class "$1" -e ranger
+alacritty --class "Alacritty,$1" -e ranger
