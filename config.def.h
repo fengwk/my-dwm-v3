@@ -91,7 +91,6 @@ static const char *taglabels[][2] = {
   { "xiaoyi_assistant", "嬨" },
   { "vlc", "嗢" },
   { "baidunetdisk", "" },
-  { "Baidunetdisk", "" },
   { "Dragon-drop", "" },
   { "et", "" },
   { "wps", "" },
@@ -161,25 +160,26 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class                 instance     title         tags mask    isfloating     monitor    hideborder    fx               fy */
-	{ NULL,                  SP0,         NULL,         SPTAG(0),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
-	{ NULL,                  SP1,         NULL,         SPTAG(1),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
-	{ NULL,                  SP2,         NULL,         SPTAG(2),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
-	{ NULL,                  SP3,         NULL,         SPTAG(3),    1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
- 	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "popo",                NULL,        NULL,         0,           1,             -1,        1,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "QQ",                  NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "feh",                 NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "XMind",               NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "xiaoyi_assistant",    NULL,        NULL,         1<<8,        0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ NULL,                  "MusicVPN",  NULL,         1<<8,        0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "jetbrains-idea",      NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            RULE_FXY_CENTER, RULE_FXY_CENTER },
- 	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,       RULE_FXY_NO,     RULE_FXY_NO     },
- 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            RULE_FXY_NO,     RULE_FXY_NO     },
+	/* class                 instance     title         tags mask    isfloating     monitor    hideborder    fixrender    fx               fy */
+	{ NULL,                  SP0,         NULL,         SPTAG(0),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP1,         NULL,         SPTAG(1),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP2,         NULL,         SPTAG(2),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+	{ NULL,                  SP3,         NULL,         SPTAG(3),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+ 	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "popo",                NULL,        NULL,         0,           1,             -1,        1,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "QQ",                  NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "feh",                 NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "XMind",               NULL,        NULL,         0,           0,             -1,        0,            1,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "baidunetdisk",        NULL,        NULL,         0,           0,             -1,        0,            1,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "xiaoyi_assistant",    NULL,        NULL,         1<<8,        0,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ NULL,                  "MusicVPN",  NULL,         1<<8,        0,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "jetbrains-idea",      NULL,        NULL,         0,           0,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+ 	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
 };
 
 /* layout(s) */

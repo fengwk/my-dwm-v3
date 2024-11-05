@@ -125,6 +125,7 @@ struct Client {
 	Client *snext;
 	Monitor *mon;
 	Window win;
+	int fixrender;
 	int hid;
 	// long long lasturgentms;
 };
@@ -183,6 +184,7 @@ typedef struct {
 	int isfloating;
 	int monitor;
 	int hideborder;
+	int fixrender;
 	int fx, fy;
 } Rule;
 
@@ -460,6 +462,7 @@ applyrules(Client *c)
 		{
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
+			c->fixrender = r->fixrender;
 			if (r->hideborder)
 				c->bw = 0;
 			if (r->isfloating) {
@@ -2223,8 +2226,17 @@ removesystrayicon(Client *i)
 void
 resize(Client *c, int x, int y, int w, int h, int interact)
 {
-	if (applysizehints(c, &x, &y, &w, &h, interact))
-		resizeclient(c, x, y, w, h);
+	if (applysizehints(c, &x, &y, &w, &h, interact)) {
+		if (c->fixrender) {
+			// 对于一些特殊的应用，例如xmind，存在resize后无法刷新的情况，这可能是应用实现的缺陷导致
+			// 下面的多次操作可以使这些应用的视图刷新生效，在找到真正的解决办法之前这会是一种无可奈何的方案
+			resizeclient(c, x+1, y+1, w+1, h+1);
+			usleep(25000);
+			resizeclient(c, x, y, w, h);
+		} else {
+			resizeclient(c, x, y, w, h);
+		}
+	}
 }
 
 void
