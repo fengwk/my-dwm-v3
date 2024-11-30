@@ -82,7 +82,8 @@ static const char *taglabels[][2] = {
   { "code-oss", "" },
   { "com-xk72-charles-gui-MainWithClassLoader", "" },
   { "popo", "﫢" },
-  { "wechat.exe", "" },
+  { "wechat.exe", "" }, // wine版本
+  { "wechat", "" }, // linux原生版本
   { "Postman", "󰰚" },
   { "XMind", "" },
   { "Xmind", "" },
@@ -169,6 +170,7 @@ static const Rule rules[] = {
  	{ "popo",                NULL,        NULL,         0,           1,             -1,        1,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "QQ",                  NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "wechat",              NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "feh",                 NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "XMind",               NULL,        NULL,         0,           0,             -1,        0,            1,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "baidunetdisk",        NULL,        NULL,         0,           0,             -1,        0,            1,           RULE_FXY_NO,     RULE_FXY_NO     },
