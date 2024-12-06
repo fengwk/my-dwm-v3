@@ -112,6 +112,7 @@ static const char *taglabels[][2] = {
   { "Peek", "" },
   { "Parcellite", "" },
   { "thunderbird", "" },
+  { "thunderbird-esr", "" },
   { "Typora", "" },
   { "Timeshift-gtk", "" },
   { "pdf", "" },
