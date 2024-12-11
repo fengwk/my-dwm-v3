@@ -80,8 +80,8 @@ static const char *taglabels[][2] = {
   { "Genymotion", "󰀲" },
   { "Genymotion Player", "󰀲" },
   { "anbox", "󰀲" },
-  { "Code", "" },
-  { "code-oss", "" },
+  { "Code", "" },
+  { "code-oss", "" },
   { "com-xk72-charles-gui-MainWithClassLoader", "" },
   { "popo", "﫢" },
   { "wechat.exe", "" }, // wine版本
