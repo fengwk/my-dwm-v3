@@ -76,10 +76,12 @@ static const char *taglabels[][2] = {
   { "jetbrains-idea", "" },
   { "jetbrains-idea-ce", "" },
   { "jetbrains-studio", "" },
+  { "jetbrains-studio", "" },
   { "Genymotion", "󰀲" },
   { "Genymotion Player", "󰀲" },
   { "anbox", "󰀲" },
-  { "code-oss", "" },
+  { "Code", "" },
+  { "code-oss", "" },
   { "com-xk72-charles-gui-MainWithClassLoader", "" },
   { "popo", "﫢" },
   { "wechat.exe", "" }, // wine版本
