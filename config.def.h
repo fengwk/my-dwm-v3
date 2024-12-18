@@ -98,6 +98,7 @@ static const char *taglabels[][2] = {
   { "et", "" },
   { "wps", "" },
   { "wpp", "" },
+  { "wpsoffice", "󰏆" },
   { "obs", "辶" },
   { "Shotcut", "難" },
   { "Optimus Manager Qt", "" },
