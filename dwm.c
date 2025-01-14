@@ -2171,9 +2171,8 @@ pullurgentwin(const Arg *arg)
 		Client *c = wintoclient(arg->ul);
 		if (c) {
 			seturgent(c, 0);
-			Client *sel = selmon->sel;
-			sendmon(c, sel->mon, 0);
-			c->tags = (c->tags & SPTAGMASK) | (selmon->sel->tags & TAGMASK);
+			sendmon(c, selmon, 0);
+			c->tags = (c->tags & SPTAGMASK) | (selmon->tagset[selmon->seltags] & TAGMASK);
 			focus(c);
 			arrange(selmon);
 		}
