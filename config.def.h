@@ -136,6 +136,8 @@ static const char *taglabels[][2] = {
   { "FreeCAD", "󰻬" },
   { "Creality Print", "" },
   { "国泰君安富易", "󰠟" },
+  { "SimpleScreenRecorder", "󱣴" },
+  { "Imager", "" },
 };
 
 /* scratchpads */
