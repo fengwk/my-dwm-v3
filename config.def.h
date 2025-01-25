@@ -228,6 +228,7 @@ static const char *rofi_clipster[] = { "dwm-roficlipster", NULL };
 /* monitor */
 static const char *switchmonitor1[] = { "dwm-switchmonitor", "1", NULL };
 static const char *switchmonitor2[] = { "dwm-switchmonitor", "2", NULL };
+static const char *switchmonitor2L[] = { "dwm-switchmonitor", "2L", NULL };
 
 /* flameshot */
 static const char *flameshotcmd[] = { "dwm-flameshot", "gui", NULL };
@@ -297,6 +298,7 @@ static const Key keys[] = {
 	/* monitor */
 	{ Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
 	{ Mod4Mask,                     XK_2,      spawn,          {.v = switchmonitor2 } }, // 屏幕检测，双监视器
+	{ Mod4Mask|ShiftMask,           XK_2,      spawn,          {.v = switchmonitor2L } }, // 屏幕检测，双监视器（左侧）
 
 	/* flameshot */
 	{ MODKEY|ShiftMask,             XK_a,      spawn,           {.v = flameshotocrcmd } }, // 截图ocr

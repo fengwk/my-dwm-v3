@@ -9,6 +9,7 @@ xiaoyi=' 嬨 XiaoYi'
 musicvpn=' 嬨 Music VPN'
 monitor1=' 󰍹 Monitor1'
 monitor2=' 󰍺 Monitor2'
+monitor2L=' 󰍺 Monitor2L'
 gapsmall=' 󰢤 Gap Small'
 gapmiddle=' 󰢤 Gap Middle'
 gaplarge=' 󰢤 Gap Large'
@@ -41,6 +42,7 @@ $xiaoyi
 $musicvpn
 $monitor1
 $monitor2
+$monitor2L
 $gapsmall
 $gapmiddle
 $gaplarge
@@ -89,10 +91,13 @@ case $selection in
         musicvpn-st
         ;;
     $monitor1)
-        dwm-switchmonitor 1
+        dwm-switchmonitor '1'
         ;;
     $monitor2)
-        dwm-switchmonitor 2
+        dwm-switchmonitor '2'
+        ;;
+    $monitor2L)
+        dwm-switchmonitor '2L'
         ;;
     $gapsmall)
         dwmc setgappx 15

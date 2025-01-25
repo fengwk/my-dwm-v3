@@ -22,10 +22,12 @@ auto() {
     xrandr --output $hdmi1 --off --output $dp1 --off --output $dp2 --off --output $edp1 --auto $edp1_scale
     dwm-defaultwallpaper
   else
-    if [ $1 -eq 1 ]; then
+    if [ "$1" = '1' ]; then
       xrandr --output $mon1 --auto --output $edp1 --off
-    else
+    elif [ "$1" = '2' ]; then
       xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --right-of $mon1
+    elif [ "$1" = '2L' ]; then
+      xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --left-of $mon1
     fi
     mon1_sz=$(xrandr | grep -w -A 1 $mon1 | sed -n '2p' | awk '{print $1}')
     if [ $mon1_sz != '3840x2160' ]; then
