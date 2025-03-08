@@ -2,7 +2,7 @@
 
 /* appearance */
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
-static unsigned int gappx = 25;                 /* gap pixel between windows */
+static unsigned int gappx = 13;                 /* gap pixel between windows */
 static unsigned int fgappx = 0;                 /* gap pixel between windows */
 static unsigned int smartgap = 1;               /* 是否在单个客户端的平铺布局时移除gap */
 static const unsigned int snap = 32;            /* snap pixel */
@@ -14,8 +14,8 @@ static const int showsystray        = 1;        /* 0 means no systray */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 0;        /* 0 means bottom bar */
 static const int windowfollow       = 1;        /* 是否使窗口跟随client移动 */
-static const char *fonts[]          = { "SauceCodePro Nerd Font:pixelsize=32" };
-static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=32";
+static const char *fonts[]          = { "SauceCodePro Nerd Font:pixelsize=16" };
+static const char dmenufont[]       = "SauceCodePro Nerd Font:pixelsize=16";
 // 淡灰配色
 // static const char col_gray1[]       = "#222222"; // normbgcolor hidselbgcolor
 // static const char col_gray2[]       = "#444444"; // normbordercolor
