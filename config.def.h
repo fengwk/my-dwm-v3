@@ -110,6 +110,7 @@ static const char *taglabels[][2] = {
   { "fcitx5-config-qt", "" },
   { "pavucontrol-qt", "" },
   { "Pavucontrol", "" },
+  { "pavucontrol", "" },
   { "Tlp-UI", "" },
   { "flameshot", "" },
   { "Peek", "" },
@@ -138,6 +139,8 @@ static const char *taglabels[][2] = {
   { "国泰君安富易", "󰠟" },
   { "SimpleScreenRecorder", "󱣴" },
   { "Imager", "" },
+  { "Blueman-manager", "󰂯" },
+  { "Blueman-applet", "󰂯" },
 };
 
 /* scratchpads */
@@ -188,6 +191,8 @@ static const Rule rules[] = {
  	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
  	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "Blueman-manager",     NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "pavucontrol",         NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
 };
 
 /* layout(s) */
