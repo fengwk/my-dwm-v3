@@ -1276,6 +1276,10 @@ void focuswin(const Arg *arg) {
 	if (c != selmon->sel) {
 		focus(c);
 		restack(selmon);
+		if (c->hid) {
+			// 如果窗口还是隐藏状态则将其重置为显示
+			togglehide(NULL);
+		}
 	}
 }
 
@@ -1349,6 +1353,10 @@ focusstack(int inc, int hid)
 	if (c) {
 		focus(c);
 		restack(selmon);
+		if (c->hid) {
+			// 如果窗口还是隐藏状态则将其重置为显示
+			togglehide(NULL);
+		}
 	}
 }
 
