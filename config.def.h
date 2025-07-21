@@ -298,7 +298,7 @@ static const Key keys[] = {
 	{ Mod4Mask,                     XK_Tab,    switchprevclient,{.ui = SWITCH_SAME_TAG} },    // 切换到上一个相同tag的聚焦窗口
 
 	/* overview */
-	{ Mod4Mask,                     XK_space,  toggleoverview, {0} }, // overview
+	{ MODKEY,                       XK_grave,  toggleoverview, {0} }, // overview
 
 	/* monitor */
 	{ Mod4Mask,                     XK_1,      spawn,          {.v = switchmonitor1 } }, // 屏幕检测，单监视器
@@ -310,10 +310,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_a,      spawn,           {.v = flameshotcmd } },    // 截图
 
 	/* scratchpads */
-	{ MODKEY,                       XK_grave,  togglescratch,   {.ui = 0 } },
-	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 1 } },
-	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 2 } },
-	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 3 } },
+	{ MODKEY,                       XK_q,      togglescratch,   {.ui = 0 } },
+	{ MODKEY,                       XK_w,      togglescratch,   {.ui = 1 } },
+	{ MODKEY,                       XK_e,      togglescratch,   {.ui = 2 } },
+	{ MODKEY,                       XK_r,      togglescratch,   {.ui = 3 } },
 
 	/* 鼠标控制 */
 	{ MODKEY|ControlMask,           XK_z,         spawn,           {.v = mouseclick1} },  // 鼠标左键点击

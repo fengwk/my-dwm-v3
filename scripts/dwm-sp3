@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# st -n "$1" -g 135x35 -e ranger
-alacritty --class "Alacritty,$1" -e ranger
+# st -n "$1" -g 135x35 -e bash -c 'cd /home/fengwk/Documents/work && nvim'
+alacritty --class "Alacritty,$1" -e bash -c 'cd /home/fengwk/Documents/work && nvim'
