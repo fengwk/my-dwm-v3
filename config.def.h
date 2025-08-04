@@ -141,6 +141,7 @@ static const char *taglabels[][2] = {
   { "Imager", "" },
   { "Blueman-manager", "󰂯" },
   { "Blueman-applet", "󰂯" },
+  { "CherryStudio", "" },
 };
 
 /* scratchpads */
