@@ -142,6 +142,7 @@ static const char *taglabels[][2] = {
   { "Blueman-manager", "󰂯" },
   { "Blueman-applet", "󰂯" },
   { "CherryStudio", "" },
+  { "com-charlesproxy-main-MainWithClassLoader", "󱢅" },
 };
 
 /* scratchpads */
