@@ -143,6 +143,7 @@ static const char *taglabels[][2] = {
   { "Blueman-applet", "󰂯" },
   { "CherryStudio", "" },
   { "com-charlesproxy-main-MainWithClassLoader", "󱢅" },
+  { "Hiddify", "󱕆" },
 };
 
 /* scratchpads */
