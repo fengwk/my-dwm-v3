@@ -69,6 +69,7 @@ static const char etagf[] = "%s"; /* format of an empty tag */
 static const char *taglabels[][2] = {
   { "st-256color", "" },
   { "Alacritty", "" },
+  { "kitty", "" },
   { "Google-chrome", "󰊯" },
   { "Google-chrome-unstable", "󰊯" },
   { "Microsoft-edge-dev", "󰇩" },
