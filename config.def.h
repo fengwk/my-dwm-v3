@@ -111,6 +111,7 @@ static const char *taglabels[][2] = {
   { "pavucontrol-qt", "" },
   { "Pavucontrol", "" },
   { "pavucontrol", "" },
+  { "pwvucontrol", "" },
   { "Tlp-UI", "" },
   { "flameshot", "" },
   { "Peek", "" },
