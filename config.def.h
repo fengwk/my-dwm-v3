@@ -180,6 +180,8 @@ static const Rule rules[] = {
 	{ NULL,                  SP1,         NULL,         SPTAG(1),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
 	{ NULL,                  SP2,         NULL,         SPTAG(2),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
 	{ NULL,                  SP3,         NULL,         SPTAG(3),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+ 	{ "fcitx5-config-qt",    NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ NULL, NULL, "Pipewire Volume Control",            0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "popo",                NULL,        NULL,         0,           1,             -1,        1,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "wechat.exe",          NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },

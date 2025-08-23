@@ -1747,11 +1747,6 @@ manage(Window w, XWindowAttributes *wa)
 	c->hid = 0;
 	// c->lasturgentms = 0;
 
-	// 浮动布局居中
-	if (selmon->lt[selmon->sellt] && !selmon->lt[selmon->sellt]->arrange) {
-		computecenter(&c->x, &c->y, &c->w, &c->h);
-	}
-
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
 		c->mon = t->mon;
@@ -1777,6 +1772,12 @@ manage(Window w, XWindowAttributes *wa)
 	updatewmhints(c);
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
+
+	// 如果当前布局是浮动布局，或者客户端是浮动窗口且没在applyrules中修改过位置，则进行居中处理
+	if ((selmon->lt[selmon->sellt] && !selmon->lt[selmon->sellt]->arrange) || (c->isfloating && c->x == wa->x && c->y == wa->y)) {
+		computecenter(&c->x, &c->y, &c->w, &c->h);
+	}
+
 	if (!c->isfloating)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
