@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # st -n "$1" -g 135x35
-alacritty --class "Alacritty,$1"
+$TERMINAL --class "$1"

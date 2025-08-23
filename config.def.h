@@ -66,10 +66,34 @@ static const char *overviewtag = "OVERVIEW";
 
 static const char ptagf[] = "%s %s"; /* format of a tag label */
 static const char etagf[] = "%s"; /* format of an empty tag */
+
+/* scratchpads */
+#define SP0 "#sp0"
+#define SP1 "#sp1"
+#define SP2 "#sp2"
+#define SP3 "#sp3"
+const char *spcmd0[] = { "dwm-sp0", SP0, NULL };
+const char *spcmd1[] = { "dwm-sp1", SP1, NULL };
+const char *spcmd2[] = { "dwm-sp2", SP2, NULL };
+const char *spcmd3[] = { "dwm-sp3", SP3, NULL };
+static Sp scratchpads[] = {
+	/* name    cmd  */
+	  {SP0,    spcmd0},
+	  {SP1,    spcmd1},
+	  {SP2,    spcmd2},
+	  {SP3,    spcmd3},
+};
+
 static const char *taglabels[][2] = {
   { "st-256color", "" },
   { "Alacritty", "" },
   { "kitty", "" },
+  { SP0, "" },
+  { SP1, "" },
+  { SP2, "" },
+  { SP3, "" },
+  { "ranger-open", "" },
+  { "nvim-open", "" },
   { "Google-chrome", "󰊯" },
   { "Google-chrome-unstable", "󰊯" },
   { "Microsoft-edge-dev", "󰇩" },
@@ -148,23 +172,6 @@ static const char *taglabels[][2] = {
   { "Hiddify", "󱕆" },
 };
 
-/* scratchpads */
-#define SP0 "#sp0"
-#define SP1 "#sp1"
-#define SP2 "#sp2"
-#define SP3 "#sp3"
-const char *spcmd0[] = { "dwm-sp0", SP0, NULL };
-const char *spcmd1[] = { "dwm-sp1", SP1, NULL };
-const char *spcmd2[] = { "dwm-sp2", SP2, NULL };
-const char *spcmd3[] = { "dwm-sp3", SP3, NULL };
-static Sp scratchpads[] = {
-	/* name    cmd  */
-	  {SP0,    spcmd0},
-	  {SP1,    spcmd1},
-	  {SP2,    spcmd2},
-	  {SP3,    spcmd3},
-};
-
 /* rules */
 #define RULE_FXY_NO -1
 #define RULE_FXY_CENTER -2
@@ -180,6 +187,8 @@ static const Rule rules[] = {
 	{ NULL,                  SP1,         NULL,         SPTAG(1),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
 	{ NULL,                  SP2,         NULL,         SPTAG(2),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
 	{ NULL,                  SP3,         NULL,         SPTAG(3),    1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
+ 	{ "ranger-open",         NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "nvim-open",           NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "fcitx5-config-qt",    NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ NULL, NULL, "Pipewire Volume Control",            0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Peek",                NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
@@ -280,7 +289,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[3]} }, // 浮动布局
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[1]} }, // monocle布局
 	{ MODKEY,                       XK_g,      setlayout,      {.v = &layouts[2]} }, // grid布局
-	{ MODKEY,                       XK_space,  setlayout,      {0} },
+	{ Mod4Mask,                     XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_f,      togglefullscr,  {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
