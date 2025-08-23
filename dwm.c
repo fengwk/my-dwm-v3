@@ -666,12 +666,14 @@ buttonpress(XEvent *e)
 			c = m->clients;
 
 			if (c) {
-				do {
-					if (!ISVISIBLE(c))
-						continue;
-					else
-						x +=(1.0 / (double)m->bt) * m->btw;
-				} while (ev->x > x && (c = c->next));
+				if (m->bt > 0) {
+					do {
+						if (!ISVISIBLE(c))
+							continue;
+						else
+							x +=(1.0 / (double)m->bt) * m->btw;
+					} while (ev->x > x && (c = c->next));
+				}
 
 				click = ClkWinTitle;
 				arg.v = c;
@@ -720,6 +722,12 @@ cleanup(void)
 	if (showsystray) {
 		XUnmapWindow(dpy, systray->win);
 		XDestroyWindow(dpy, systray->win);
+		// FIX: 释放 systray->icons 链表中的 Client 结构体
+		Client *i, *next_i;
+		for (i = systray->icons; i; i = next_i) {
+			next_i = i->next;
+			free(i);
+		}
 		free(systray);
 	}
 
@@ -1569,6 +1577,7 @@ hidewin(Client *c) {
 	XSelectInput(dpy, w, ca.your_event_mask & ~StructureNotifyMask);
 	XUnmapWindow(dpy, w);
 	setclientstate(c, IconicState);
+	c->hid = 1; // FIX: 更新 c->hid 标志
 	XSelectInput(dpy, root, ra.your_event_mask);
 	XSelectInput(dpy, w, ca.your_event_mask);
 	XUngrabServer(dpy);
@@ -2883,6 +2892,7 @@ showwin(Client *c)
 
 	XMapWindow(dpy, c->win);
 	setclientstate(c, NormalState);
+	c->hid = 0; // FIX: 更新 c->hid 标志
 	arrange(c->mon);
 }
 
