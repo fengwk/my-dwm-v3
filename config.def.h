@@ -205,7 +205,7 @@ static const Rule rules[] = {
  	{ "jetbrains-idea-ce",   NULL,        NULL,         0,           0,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "netease-cloud-music", NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Xfce4-power-manager-settings", NULL, NULL,       0,           1,             -1,        0,            0,           RULE_FXY_CENTER, RULE_FXY_CENTER },
- 	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
+ 	{ "Google-chrome", "crx_ikhdkkncnoglghljlkmcimlnlhkeamad", NULL, 0, 1,          -1,        0,            0,           RULE_FXY_NEGOFFSET+600, RULE_FXY_CENTER     },
  	{ "com-xk72-charles-gui-MainWithClassLoader", NULL, "Find in Session 1", 0, 1,  -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "Blueman-manager",     NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
  	{ "pavucontrol",         NULL,        NULL,         0,           1,             -1,        0,            0,           RULE_FXY_NO,     RULE_FXY_NO     },
