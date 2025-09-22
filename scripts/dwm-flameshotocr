@@ -1,3 +1,4 @@
 #!/bin/bash
 
-dwm-flameshot gui --raw | tesseract -l eng+chi_sim stdin stdout | xclip -selection clipboard
+# dwm-flameshot gui --raw | tesseract -l eng+chi_sim stdin stdout | xclip -selection clipboard
+dwm-flameshot gui --raw | umi-ocr image -i | xclip -selection clipboard
