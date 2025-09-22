@@ -18,7 +18,8 @@ dwm-rofi -dmenu -i -p '%s' -kb-custom-8 'Ctrl+Return' -kb-accept-custom ''\
 terms = ["alacritty", "kitty", "st*", "*term",
          "*terminal", "konsole", "terminator", "urxvt", "zutty",
          "jetbrains-idea",  # vim mode
-         "jetbrains-idea-ce"  # vim mode
+         "jetbrains-idea-ce",  # vim mode
+         "#sp*"
          ]
 
 
