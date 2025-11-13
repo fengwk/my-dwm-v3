@@ -170,6 +170,7 @@ static const char *taglabels[][2] = {
   { "CherryStudio", "" },
   { "com-charlesproxy-main-MainWithClassLoader", "󱢅" },
   { "Hiddify", "󱕆" },
+  { "steam", "" },
 };
 
 /* rules */
