@@ -119,6 +119,7 @@ static const char *taglabels[][2] = {
   { "xiaoyi_assistant", "嬨" },
   { "vlc", "嗢" },
   { "baidunetdisk", "" },
+  { "quarkclouddrive.exe", "" },
   { "Dragon-drop", "" },
   { "et", "" },
   { "wps", "" },
