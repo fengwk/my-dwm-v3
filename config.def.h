@@ -94,6 +94,7 @@ static const char *taglabels[][2] = {
   { SP3, "" },
   { "ranger-open", "" },
   { "nvim-open", "" },
+  { "Chromium-browser", "󰊯" },
   { "Google-chrome", "󰊯" },
   { "Google-chrome-unstable", "󰊯" },
   { "Microsoft-edge-dev", "󰇩" },
