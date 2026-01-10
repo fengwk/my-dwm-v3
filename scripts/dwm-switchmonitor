@@ -15,6 +15,14 @@ if [ "$edp1_sz" == '1920x1080' ]; then
     edp1_scale='--scale 1.5x1.5'
 fi
 
+# 获取指定显示器和分辨率的最高刷新率
+get_max_rate() {
+    local output=$1
+    local resolution=$2
+    xrandr | grep -A 50 "^$output connected" | grep "^   $resolution" | head -n 1 | \
+    grep -oP '\d+\.\d+' | sort -rn | head -n 1
+}
+
 auto() {
 
   mon1=$(xrandr | grep -w connected | grep -P -w -o "$hdmi1|$dp1|$dp2")
@@ -22,14 +30,27 @@ auto() {
     xrandr --output $hdmi1 --off --output $dp1 --off --output $dp2 --off --output $edp1 --auto $edp1_scale
     dwm-defaultwallpaper
   else
-    if [ "$1" = '1' ]; then
-      xrandr --output $mon1 --auto --output $edp1 --off
-    elif [ "$1" = '2' ]; then
-      xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --right-of $mon1
-    elif [ "$1" = '2L' ]; then
-      xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --left-of $mon1
-    fi
+    # 获取外接显示器的分辨率
     mon1_sz=$(xrandr | grep -w -A 1 $mon1 | sed -n '2p' | awk '{print $1}')
+    
+    # 获取该分辨率下的最高刷新率
+    max_rate=$(get_max_rate $mon1 $mon1_sz)
+    
+    # 如果检测到刷新率大于60Hz，使用最高刷新率，否则使用auto
+    if [ -n "$max_rate" ] && [ $(echo "$max_rate > 60" | bc -l) -eq 1 ]; then
+      rate_param="--mode $mon1_sz --rate $max_rate"
+    else
+      rate_param="--auto"
+    fi
+    
+    if [ "$1" = '1' ]; then
+      xrandr --output $mon1 $rate_param --output $edp1 --off
+    elif [ "$1" = '2' ]; then
+      xrandr --output $mon1 $rate_param --primary --output $edp1 --auto $edp1_scale --right-of $mon1
+    elif [ "$1" = '2L' ]; then
+      xrandr --output $mon1 $rate_param --primary --output $edp1 --auto $edp1_scale --left-of $mon1
+    fi
+    
     if [ $mon1_sz != '3840x2160' ]; then
       xrandr --output $mon1 --scale 1.5x1.5
       xrandr --output $edp1 --pos 3840x0 $edp1_scale
