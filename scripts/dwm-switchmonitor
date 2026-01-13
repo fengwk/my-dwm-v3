@@ -1,43 +1,146 @@
 #!/bin/bash
 
-# 公司
-# 0: +*DP-1-1 3840/602x2160/339+0+0  DP-1-1
-# 1: +eDP-1-1 3264/344x1836/194+3840+0  eDP-1-1
+# 获取参数：显示器数量限制和排列方向
+# 例如：2 表示使用2个显示器从左到右排列
+#       2L 表示使用2个显示器从右到左排列
+#       空 表示使用所有显示器从左到右排列（或从环境变量读取）
+input="${1:-${DEFAULT_SWITCH_MONITOR_LIMIT}}"
+limit=""
+direction="right"
 
-edp1=$(xrandr | grep -P -w -o "^eDP-1-1|eDP-1|eDP1|eDP|USB-C-0" | head -n 1)
-hdmi1=$(xrandr | grep -P -w -o "HDMI-A-0" | head -n 1)
-dp1=$(xrandr | grep -P -w -o "DisplayPort-0|DP-1-1|DP-1|DP1" | head -n 1)
-dp2=$(xrandr | grep -P -w -o "DisplayPort-1|DP-1-2|DP-2|DP2" | head -n 1)
-
-edp1_scale=''
-edp1_sz=$(xrandr | grep -w -A 1 $edp1 | sed -n '2p' | awk '{print $1}')
-if [ "$edp1_sz" == '1920x1080' ]; then
-    edp1_scale='--scale 1.5x1.5'
+if [[ "$input" =~ ^([0-9]+)L$ ]]; then
+    limit="${BASH_REMATCH[1]}"
+    direction="left"
+elif [[ "$input" =~ ^[0-9]+$ ]]; then
+    limit="$input"
+    direction="right"
 fi
 
-auto() {
+# 等待指定显示器连接就绪
+wait_for_monitor() {
+    local monitor_name=$1
+    local max_wait=${2:-10}
+    local waited=0
 
-  mon1=$(xrandr | grep -w connected | grep -P -w -o "$hdmi1|$dp1|$dp2")
-  if [ -z "$mon1" ]; then
-    xrandr --output $hdmi1 --off --output $dp1 --off --output $dp2 --off --output $edp1 --auto $edp1_scale
-    dwm-defaultwallpaper
-  else
-    if [ "$1" = '1' ]; then
-      xrandr --output $mon1 --auto --output $edp1 --off
-    elif [ "$1" = '2' ]; then
-      xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --right-of $mon1
-    elif [ "$1" = '2L' ]; then
-      xrandr --output $mon1 --auto --primary --output $edp1 --auto $edp1_scale --left-of $mon1
-    fi
-    mon1_sz=$(xrandr | grep -w -A 1 $mon1 | sed -n '2p' | awk '{print $1}')
-    if [ $mon1_sz != '3840x2160' ]; then
-      xrandr --output $mon1 --scale 1.5x1.5
-      xrandr --output $edp1 --pos 3840x0 $edp1_scale
-    else
-      xrandr --output $mon1 --scale 1x1
-    fi
-    dwm-defaultwallpaper
-  fi
+    while [ $waited -lt $max_wait ]; do
+        if xrandr --query | grep -q "^$monitor_name connected"; then
+            sleep 0.5
+            return 0
+        fi
+        sleep 0.5
+        waited=$((waited + 1))
+    done
+    return 1
 }
 
-auto $@
+# 获取指定显示器的最高分辨率
+get_max_resolution() {
+    local output=$1
+    xrandr --query | grep -A 50 "^$output connected" | grep -P '^\s+\d+x\d+' | \
+    head -n 1 | awk '{print $1}'
+}
+
+# 获取指定显示器和分辨率的最高刷新率
+get_max_rate() {
+    local output=$1
+    local resolution=$2
+    xrandr --query | grep -A 50 "^$output connected" | grep "^\s\+$resolution" | \
+    head -n 1 | grep -oP '\d+\.\d+' | sort -rn | head -n 1
+}
+
+# 如果指定了 PRIMARY 显示器，等待其就绪
+if [ -n "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
+    wait_for_monitor "$DEFAULT_SWITCH_MONITOR_PRIMARY" 10
+fi
+
+# 获取所有已连接的显示器列表（按 xrandr 输出顺序）
+mapfile -t all_connected_monitors < <(xrandr --query | grep " connected" | grep -oP '^[^ ]+')
+
+if [ ${#all_connected_monitors[@]} -eq 0 ]; then
+    echo "错误：没有检测到已连接的显示器"
+    exit 1
+fi
+
+# 根据 DEFAULT_SWITCH_MONITOR_PRIMARY 调整起始位置
+start_index=0
+if [ -n "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
+    for i in "${!all_connected_monitors[@]}"; do
+        if [ "${all_connected_monitors[$i]}" = "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
+            start_index=$i
+            break
+        fi
+    done
+fi
+
+# 从起始位置循环遍历选择显示器
+total_monitors=${#all_connected_monitors[@]}
+connected_monitors=()
+select_count=${limit:-$total_monitors}
+
+for ((i=0; i<select_count && i<total_monitors; i++)); do
+    idx=$(( (start_index + i) % total_monitors ))
+    connected_monitors+=("${all_connected_monitors[$idx]}")
+done
+
+# 获取所有需要关闭的显示器
+mapfile -t all_outputs < <(xrandr --query | grep -oP '^[^ ]+(?= (connected|disconnected))')
+off_outputs=()
+for output in "${all_outputs[@]}"; do
+    if [[ ! " ${connected_monitors[*]} " =~ " ${output} " ]]; then
+        off_outputs+=("$output")
+    fi
+done
+
+# 第一步：关闭其他显示器，只配置 primary 显示器
+primary_monitor="${connected_monitors[0]}"
+primary_res=$(get_max_resolution "$primary_monitor")
+primary_rate=$(get_max_rate "$primary_monitor" "$primary_res")
+
+if [ -z "$primary_res" ]; then
+    echo "错误：无法获取主显示器 $primary_monitor 的分辨率"
+    exit 1
+fi
+
+xrandr_cmd1="xrandr"
+for output in "${off_outputs[@]}"; do
+    xrandr_cmd1+=" --output $output --off"
+done
+for ((i=1; i<${#connected_monitors[@]}; i++)); do
+    xrandr_cmd1+=" --output ${connected_monitors[$i]} --off"
+done
+xrandr_cmd1+=" --output $primary_monitor --mode $primary_res --primary --pos 0x0"
+[ -n "$primary_rate" ] && xrandr_cmd1+=" --rate $primary_rate"
+
+echo "执行命令 (primary): $xrandr_cmd1"
+eval "$xrandr_cmd1"
+
+# 第二步：配置其他显示器
+if [ ${#connected_monitors[@]} -gt 1 ]; then
+    sleep 0.5  # 等待 primary 显示器渲染
+
+    xrandr_cmd2="xrandr"
+    prev_monitor="$primary_monitor"
+
+    for ((i=1; i<${#connected_monitors[@]}; i++)); do
+        monitor="${connected_monitors[$i]}"
+        max_res=$(get_max_resolution "$monitor")
+        [ -z "$max_res" ] && continue
+
+        max_rate=$(get_max_rate "$monitor" "$max_res")
+        xrandr_cmd2+=" --output $monitor --mode $max_res"
+        [ -n "$max_rate" ] && xrandr_cmd2+=" --rate $max_rate"
+
+        if [ "$direction" = "right" ]; then
+            xrandr_cmd2+=" --right-of $prev_monitor"
+        else
+            xrandr_cmd2+=" --left-of $prev_monitor"
+        fi
+        prev_monitor="$monitor"
+    done
+
+    echo "执行命令 (secondary): $xrandr_cmd2"
+    eval "$xrandr_cmd2"
+fi
+
+# 设置壁纸
+command -v dwm-defaultwallpaper &>/dev/null && dwm-defaultwallpaper

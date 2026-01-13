@@ -174,6 +174,7 @@ static const char *taglabels[][2] = {
   { "com-charlesproxy-main-MainWithClassLoader", "󱢅" },
   { "Hiddify", "󱕆" },
   { "steam", "" },
+  { "gamescope", "" },
 };
 
 /* rules */
