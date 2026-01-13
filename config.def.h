@@ -170,6 +170,7 @@ static const char *taglabels[][2] = {
   { "Blueman-manager", "󰂯" },
   { "Blueman-applet", "󰂯" },
   { "CherryStudio", "" },
+  { "Com.psyche.kelivo", "" },
   { "com-charlesproxy-main-MainWithClassLoader", "󱢅" },
   { "Hiddify", "󱕆" },
   { "steam", "" },
