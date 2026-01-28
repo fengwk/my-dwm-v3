@@ -49,8 +49,13 @@ get_max_rate() {
 }
 
 # 如果指定了 PRIMARY 显示器，等待其就绪
+primary_found=0
 if [ -n "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
-    wait_for_monitor "$DEFAULT_SWITCH_MONITOR_PRIMARY" 10
+    if wait_for_monitor "$DEFAULT_SWITCH_MONITOR_PRIMARY" 10; then
+        primary_found=1
+    else
+        echo "警告：指定的主显示器 $DEFAULT_SWITCH_MONITOR_PRIMARY 未连接，将使用其他可用显示器"
+    fi
 fi
 
 # 获取所有已连接的显示器列表（按 xrandr 输出顺序）
@@ -63,7 +68,7 @@ fi
 
 # 根据 DEFAULT_SWITCH_MONITOR_PRIMARY 调整起始位置
 start_index=0
-if [ -n "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
+if [ -n "$DEFAULT_SWITCH_MONITOR_PRIMARY" ] && [ "$primary_found" -eq 1 ]; then
     for i in "${!all_connected_monitors[@]}"; do
         if [ "${all_connected_monitors[$i]}" = "$DEFAULT_SWITCH_MONITOR_PRIMARY" ]; then
             start_index=$i
