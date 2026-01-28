@@ -4,5 +4,5 @@
 
 # 使用新的方式随即选取图片可以使得多个显示器上显示相同的背景图
 picdir=~/Pictures/wallpapers/
-pic=$(ls $picdir | tr ' ' '\n' | shuf | head -1)
-feh --bg-fill --no-fehbg $picdir$pic
+pic=$(find "$picdir" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' \) -print0 | shuf -z | head -z -n 1 | tr -d '\0')
+feh --bg-fill --no-fehbg "$pic"
