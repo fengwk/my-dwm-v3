@@ -175,6 +175,7 @@ static const char *taglabels[][2] = {
   { "Hiddify", "󱕆" },
   { "steam", "" },
   { "gamescope", "" },
+  { "Bytedance-feishu", "" },
 };
 
 /* rules */
